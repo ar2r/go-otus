@@ -15,13 +15,7 @@ var (
 )
 
 type User struct {
-	ID       int
-	Name     string
-	Username string
-	Email    string
-	Phone    string
-	Password string
-	Address  string
+	Email string
 }
 
 type DomainStat map[string]int
@@ -46,6 +40,11 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 			result[foundDomain]++
 		}
 	}
+
+	if err := scanner.Err(); err != nil {
+		return result, err
+	}
+
 	return result, nil
 }
 
@@ -58,8 +57,16 @@ func unmarshalUserEmail(data []byte) (string, error) {
 }
 
 func ExtractMatchedDomain(email, domain string) string {
-	if strings.Contains(email, domain) {
-		return strings.SplitN(strings.ToLower(email), "@", 2)[1]
+	email = strings.ToLower(email)
+
+	if !strings.HasSuffix(email, domain) {
+		return ""
 	}
-	return ""
+
+	emailParts := strings.SplitN(email, "@", 2)
+	if len(emailParts) != 2 {
+		return ""
+	}
+
+	return emailParts[1]
 }
