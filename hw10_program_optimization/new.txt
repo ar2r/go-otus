@@ -1,0 +1,16 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/ar2r/go-otus/hw10_program_optimization
+cpu: Apple M2 Pro
+BenchmarkGetDomainStat-12    	  253215	      4732 ns/op	    7380 B/op	     102 allocs/op
+BenchmarkGetDomainStat-12    	  254173	      4744 ns/op	    7380 B/op	     102 allocs/op
+BenchmarkGetDomainStat-12    	  252487	      4720 ns/op	    7380 B/op	     102 allocs/op
+BenchmarkGetDomainStat-12    	  255230	      4730 ns/op	    7380 B/op	     102 allocs/op
+BenchmarkGetDomainStat-12    	  255696	      4726 ns/op	    7380 B/op	     102 allocs/op
+BenchmarkGetDomainStat-12    	  256722	      4734 ns/op	    7380 B/op	     102 allocs/op
+BenchmarkGetDomainStat-12    	  252898	      4728 ns/op	    7379 B/op	     102 allocs/op
+BenchmarkGetDomainStat-12    	  257169	      4712 ns/op	    7380 B/op	     102 allocs/op
+BenchmarkGetDomainStat-12    	  252630	      4715 ns/op	    7379 B/op	     102 allocs/op
+BenchmarkGetDomainStat-12    	  255650	      4716 ns/op	    7380 B/op	     102 allocs/op
+PASS
+ok  	github.com/ar2r/go-otus/hw10_program_optimization	13.585s
