@@ -8,7 +8,7 @@ import (
 
 var (
 	compiledRegexps = make(map[string]*regexp.Regexp)
-	regexpMutex     = sync.Mutex{}
+	regexpMutex     = sync.RWMutex{}
 )
 
 type RegexpRule struct {
@@ -32,6 +32,13 @@ func (r RegexpRule) Validate(v interface{}) error {
 }
 
 func getCompiledRegexp(pattern string) (*regexp.Regexp, error) {
+	regexpMutex.RLock()
+	if compiled, exists := compiledRegexps[pattern]; exists {
+		regexpMutex.RUnlock()
+		return compiled, nil
+	}
+	regexpMutex.RUnlock()
+
 	regexpMutex.Lock()
 	defer regexpMutex.Unlock()
 
