@@ -85,15 +85,15 @@ func Validate(v interface{}) error {
 		//nolint:exhaustive
 		switch propValue.Kind() {
 		case reflect.String:
-			errorsStack, err = stringValidate([]string{propValue.String()}, rules)
+			errorsStack, err = validateValues([]string{propValue.String()}, rules)
 		case reflect.Int:
-			errorsStack, err = intValidate([]int{int(propValue.Int())}, rules)
+			errorsStack, err = validateValues([]int{int(propValue.Int())}, rules)
 		case reflect.Slice:
 			switch propValue.Type().Elem().Kind() {
 			case reflect.String:
-				errorsStack, err = stringValidate(propValue.Interface().([]string), rules)
+				errorsStack, err = validateValues(propValue.Interface().([]string), rules)
 			case reflect.Int:
-				errorsStack, err = intValidate(propValue.Interface().([]int), rules)
+				errorsStack, err = validateValues(propValue.Interface().([]int), rules)
 			default:
 				return fmt.Errorf("%w: %v", ErrSysUnsupportedSlice, propValue.Type().Elem().Kind())
 			}
@@ -121,37 +121,18 @@ func Validate(v interface{}) error {
 	return nil
 }
 
-func validate(values interface{}, rules []Rule) ([]error, error) {
+func validateValues[T interface{ int | string }](values []T, rules []Rule) ([]error, error) {
 	var errorsSlice []error
-
-	// Кучу времени потратил, но так и не смог никак убрать это дублирование. Подскажите, пожалуйста, как это сделать
-	switch v := values.(type) {
-	case []int:
-		for _, value := range v {
-			for _, rule := range rules {
-				err := rule.Validate(value)
-				if err != nil {
-					if errors.As(err, &SystemError{}) {
-						return nil, err
-					}
-					errorsSlice = append(errorsSlice, err)
+	for _, value := range values {
+		for _, rule := range rules {
+			err := rule.Validate(value)
+			if err != nil {
+				if errors.As(err, &SystemError{}) {
+					return nil, err
 				}
+				errorsSlice = append(errorsSlice, err)
 			}
 		}
-	case []string:
-		for _, value := range v {
-			for _, rule := range rules {
-				err := rule.Validate(value)
-				if err != nil {
-					if errors.As(err, &SystemError{}) {
-						return nil, err
-					}
-					errorsSlice = append(errorsSlice, err)
-				}
-			}
-		}
-	default:
-		return nil, fmt.Errorf("%w: %T", ErrSysUnsupportedType, values)
 	}
 
 	if len(errorsSlice) > 0 {
@@ -159,12 +140,4 @@ func validate(values interface{}, rules []Rule) ([]error, error) {
 	}
 
 	return nil, nil
-}
-
-func intValidate(values []int, rules []Rule) ([]error, error) {
-	return validate(values, rules)
-}
-
-func stringValidate(values []string, rules []Rule) ([]error, error) {
-	return validate(values, rules)
 }
