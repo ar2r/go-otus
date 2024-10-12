@@ -124,6 +124,7 @@ func Validate(v interface{}) error {
 func validate(values interface{}, rules []Rule) ([]error, error) {
 	var errorsSlice []error
 
+	// Кучу времени потратил, но так и не смог никак убрать это дублирование. Подскажите, пожалуйста, как это сделать
 	switch v := values.(type) {
 	case []int:
 		for _, value := range v {
