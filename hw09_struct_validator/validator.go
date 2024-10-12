@@ -133,7 +133,7 @@ func Validate(v interface{}) error {
 	return nil
 }
 
-func validateValues[T interface{ Integer | string }](values []T, rules []Rule) ([]error, error) {
+func validateValues[T interface{ int | string }](values []T, rules []Rule) ([]error, error) {
 	var errorsSlice []error
 	for _, value := range values {
 		for _, rule := range rules {
