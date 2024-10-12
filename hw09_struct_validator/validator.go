@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-
-	"golang.org/x/exp/constraints"
 )
 
 var (
@@ -35,6 +33,18 @@ var (
 	LenRuleTag    = "len"
 	RegexpRuleTag = "regexp"
 )
+
+type Signed interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64
+}
+
+type Unsigned interface {
+	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr
+}
+
+type Integer interface {
+	Signed | Unsigned
+}
 
 type SystemError struct {
 	Err error
@@ -123,7 +133,7 @@ func Validate(v interface{}) error {
 	return nil
 }
 
-func validateValues[T interface{ constraints.Integer | string }](values []T, rules []Rule) ([]error, error) {
+func validateValues[T interface{ Integer | string }](values []T, rules []Rule) ([]error, error) {
 	var errorsSlice []error
 	for _, value := range values {
 		for _, rule := range rules {
