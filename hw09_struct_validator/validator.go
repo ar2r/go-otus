@@ -30,11 +30,11 @@ var (
 )
 
 var (
-	MinRule    = "min"
-	MaxRule    = "max"
-	InRule     = "in"
-	LenRule    = "len"
-	RegexpRule = "regexp"
+	MinRuleTag    = "min"
+	MaxRuleTag    = "max"
+	InRuleTag     = "in"
+	LenRuleTag    = "len"
+	RegexpRuleTag = "regexp"
 )
 
 type SystemError struct {
@@ -83,6 +83,11 @@ func Validate(v interface{}) error {
 			continue
 		}
 
+		rules, err := parseRules(propTagValue)
+		if err != nil {
+			return err
+		}
+
 		//nolint:exhaustive
 		switch propValue.Kind() {
 		case reflect.String:
@@ -97,17 +102,18 @@ func Validate(v interface{}) error {
 				})
 			}
 		case reflect.Int:
-			err := intValidate(int(propValue.Int()), propTagValue)
+			errorsStack, err := intValidate(int(propValue.Int()), rules)
 			if err != nil {
 				if errors.As(err, &SystemError{}) {
 					return err
 				}
+			}
+			for _, err := range errorsStack {
 				errorsSlice = append(errorsSlice, ValidationError{
 					Field: propType.Name,
 					Err:   err,
 				})
 			}
-
 		//nolint:exhaustive
 		case reflect.Slice:
 			switch propValue.Type().Elem().Kind() {
@@ -125,17 +131,17 @@ func Validate(v interface{}) error {
 					}
 				}
 			case reflect.Int:
-				for _, val := range propValue.Interface().([]int) {
-					err := intValidate(val, propTagValue)
-					if err != nil {
-						if errors.As(err, &SystemError{}) {
-							return err
-						}
-						errorsSlice = append(errorsSlice, ValidationError{
-							Field: propType.Name,
-							Err:   err,
-						})
+				errorsStack, err := intValidate(propValue.Interface().([]int), rules)
+				if err != nil {
+					if errors.As(err, &SystemError{}) {
+						return err
 					}
+				}
+				for _, err := range errorsStack {
+					errorsSlice = append(errorsSlice, ValidationError{
+						Field: propType.Name,
+						Err:   err,
+					})
 				}
 			default:
 				return fmt.Errorf("%w: %v", ErrSysUnsupportedSlice, propValue.Type().Elem().Kind())
@@ -151,45 +157,36 @@ func Validate(v interface{}) error {
 	return nil
 }
 
-func intValidate(v int, tag string) error {
-	for _, rawRule := range strings.Split(tag, "|") {
-		rule := strings.Split(rawRule, ":")
+func intValidate(value interface{}, rules []Rule) ([]error, error) {
+	var errorsSlice []error
+	var values []int
 
-		if len(rule) != 2 {
-			return fmt.Errorf("%w: %s", ErrSysInvalidRule, tag)
-		}
+	switch v := value.(type) {
+	case int:
+		values = []int{v}
+	case []int:
+		values = v
+	default:
+		return nil, fmt.Errorf("%w: %T", ErrSysUnsupportedType, value)
+	}
 
-		switch rule[0] {
-		case MinRule:
-			minValue, err := strconv.Atoi(rule[1])
+	for _, value := range values {
+		for _, rule := range rules {
+			err := rule.Validate(value)
 			if err != nil {
-				return fmt.Errorf("%w: %w", ErrSysCantConvertMinValue, err)
-			}
-			if v < minValue {
-				return fmt.Errorf("%w: %d", ErrValueIsLessThanMinValue, minValue)
-			}
-		case MaxRule:
-			maxValue, err := strconv.Atoi(rule[1])
-			if err != nil {
-				return fmt.Errorf("%w: %w", ErrSysCantConvertMaxValue, err)
-			}
-			if v > maxValue {
-				return fmt.Errorf("%w: %d", ErrValueIsMoreThanMaxValue, maxValue)
-			}
-		case InRule:
-			vAsString := strconv.Itoa(v)
-			isMatched := false
-			for _, item := range strings.Split(rule[1], ",") {
-				if item == vAsString {
-					isMatched = true
+				if errors.As(err, &SystemError{}) {
+					return nil, err
 				}
-			}
-			if !isMatched {
-				return fmt.Errorf("%w: %d in %s", ErrValueNotInList, v, rule[1])
+				errorsSlice = append(errorsSlice, err)
 			}
 		}
 	}
-	return nil
+
+	if len(errorsSlice) > 0 {
+		return errorsSlice, nil
+	}
+
+	return nil, nil
 }
 
 func stringValidate(v string, tag string) error {
@@ -201,7 +198,7 @@ func stringValidate(v string, tag string) error {
 		}
 
 		switch rule[0] {
-		case LenRule:
+		case LenRuleTag:
 			lenString, err := strconv.Atoi(rule[1])
 			if err != nil {
 				return fmt.Errorf("%w: %w", ErrSysCantConvertLenValue, err)
@@ -209,7 +206,7 @@ func stringValidate(v string, tag string) error {
 			if len(v) != lenString {
 				return fmt.Errorf("%w: expected %d, got %d", ErrStringLengthMismatch, lenString, len(v))
 			}
-		case RegexpRule:
+		case RegexpRuleTag:
 			compiledRegexp, err := getCompiledRegexp(rule[1])
 			if err != nil {
 				return ErrSysRegexpCompile
@@ -217,7 +214,7 @@ func stringValidate(v string, tag string) error {
 			if !compiledRegexp.MatchString(v) {
 				return fmt.Errorf("%w: %s", ErrRegexpMatchFailed, rule[1])
 			}
-		case InRule:
+		case InRuleTag:
 			isMatched := false
 			for _, item := range strings.Split(rule[1], ",") {
 				if item == v {
