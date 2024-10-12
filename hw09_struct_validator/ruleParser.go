@@ -47,7 +47,6 @@ func parseRules(tag string) ([]Rule, error) {
 			rules = append(rules, LenRule{Value: lenValue})
 		case RegexpRuleTag:
 			rules = append(rules, RegexpRule{Value: rule[1]})
-
 		}
 	}
 	return rules, nil

@@ -57,7 +57,6 @@ func (v ValidationErrors) Error() string {
 	return builder.String()
 }
 
-//nolint:gocognit
 func Validate(v interface{}) error {
 	errorsSlice := make(ValidationErrors, 0)
 
@@ -83,6 +82,7 @@ func Validate(v interface{}) error {
 		var errorsStack []error
 		var err error
 
+		//nolint:exhaustive
 		switch propValue.Kind() {
 		case reflect.String:
 			errorsStack, err = stringValidate([]string{propValue.String()}, rules)
