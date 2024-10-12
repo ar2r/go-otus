@@ -4,10 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"regexp"
-	"strconv"
 	"strings"
-	"sync"
 )
 
 var (
@@ -52,11 +49,6 @@ type ValidationError struct {
 
 type ValidationErrors []ValidationError
 
-var (
-	compiledRegexps = make(map[string]*regexp.Regexp)
-	regexpMutex     = sync.Mutex{}
-)
-
 func (v ValidationErrors) Error() string {
 	builder := strings.Builder{}
 	for _, e := range v {
@@ -83,71 +75,43 @@ func Validate(v interface{}) error {
 			continue
 		}
 
-		rules, err := parseRules(propTagValue)
-		if err != nil {
-			return err
+		rules, parseErr := parseRules(propTagValue)
+		if parseErr != nil {
+			return parseErr
 		}
 
-		//nolint:exhaustive
+		var errorsStack []error
+		var err error
+
 		switch propValue.Kind() {
 		case reflect.String:
-			err := stringValidate(propValue.String(), propTagValue)
-			if err != nil {
-				if errors.As(err, &SystemError{}) {
-					return err
-				}
-				errorsSlice = append(errorsSlice, ValidationError{
-					Field: propType.Name,
-					Err:   err,
-				})
-			}
+			errorsStack, err = stringValidate([]string{propValue.String()}, rules)
 		case reflect.Int:
-			errorsStack, err := intValidate(int(propValue.Int()), rules)
-			if err != nil {
-				if errors.As(err, &SystemError{}) {
-					return err
-				}
-			}
-			for _, err := range errorsStack {
-				errorsSlice = append(errorsSlice, ValidationError{
-					Field: propType.Name,
-					Err:   err,
-				})
-			}
-		//nolint:exhaustive
+			errorsStack, err = intValidate([]int{int(propValue.Int())}, rules)
 		case reflect.Slice:
 			switch propValue.Type().Elem().Kind() {
 			case reflect.String:
-				for _, val := range propValue.Interface().([]string) {
-					err := stringValidate(val, propTagValue)
-					if err != nil {
-						if errors.As(err, &SystemError{}) {
-							return err
-						}
-						errorsSlice = append(errorsSlice, ValidationError{
-							Field: propType.Name,
-							Err:   err,
-						})
-					}
-				}
+				errorsStack, err = stringValidate(propValue.Interface().([]string), rules)
 			case reflect.Int:
-				errorsStack, err := intValidate(propValue.Interface().([]int), rules)
-				if err != nil {
-					if errors.As(err, &SystemError{}) {
-						return err
-					}
-				}
-				for _, err := range errorsStack {
-					errorsSlice = append(errorsSlice, ValidationError{
-						Field: propType.Name,
-						Err:   err,
-					})
-				}
+				errorsStack, err = intValidate(propValue.Interface().([]int), rules)
 			default:
 				return fmt.Errorf("%w: %v", ErrSysUnsupportedSlice, propValue.Type().Elem().Kind())
 			}
 		default:
 			return fmt.Errorf("%w: %v", ErrSysUnsupportedType, propValue.Kind())
+		}
+
+		// Обработка ошибок и склеиваем их в один массив
+		if err != nil {
+			if errors.As(err, &SystemError{}) {
+				return err
+			}
+		}
+		for _, err := range errorsStack {
+			errorsSlice = append(errorsSlice, ValidationError{
+				Field: propType.Name,
+				Err:   err,
+			})
 		}
 	}
 
@@ -157,29 +121,36 @@ func Validate(v interface{}) error {
 	return nil
 }
 
-func intValidate(value interface{}, rules []Rule) ([]error, error) {
+func validate(values interface{}, rules []Rule) ([]error, error) {
 	var errorsSlice []error
-	var values []int
 
-	switch v := value.(type) {
-	case int:
-		values = []int{v}
+	switch v := values.(type) {
 	case []int:
-		values = v
-	default:
-		return nil, fmt.Errorf("%w: %T", ErrSysUnsupportedType, value)
-	}
-
-	for _, value := range values {
-		for _, rule := range rules {
-			err := rule.Validate(value)
-			if err != nil {
-				if errors.As(err, &SystemError{}) {
-					return nil, err
+		for _, value := range v {
+			for _, rule := range rules {
+				err := rule.Validate(value)
+				if err != nil {
+					if errors.As(err, &SystemError{}) {
+						return nil, err
+					}
+					errorsSlice = append(errorsSlice, err)
 				}
-				errorsSlice = append(errorsSlice, err)
 			}
 		}
+	case []string:
+		for _, value := range v {
+			for _, rule := range rules {
+				err := rule.Validate(value)
+				if err != nil {
+					if errors.As(err, &SystemError{}) {
+						return nil, err
+					}
+					errorsSlice = append(errorsSlice, err)
+				}
+			}
+		}
+	default:
+		return nil, fmt.Errorf("%w: %T", ErrSysUnsupportedType, values)
 	}
 
 	if len(errorsSlice) > 0 {
@@ -189,59 +160,10 @@ func intValidate(value interface{}, rules []Rule) ([]error, error) {
 	return nil, nil
 }
 
-func stringValidate(v string, tag string) error {
-	for _, rawRule := range strings.Split(tag, "|") {
-		rule := strings.Split(rawRule, ":")
-
-		if len(rule) != 2 {
-			return fmt.Errorf("%w: %s", ErrSysInvalidRule, rawRule)
-		}
-
-		switch rule[0] {
-		case LenRuleTag:
-			lenString, err := strconv.Atoi(rule[1])
-			if err != nil {
-				return fmt.Errorf("%w: %w", ErrSysCantConvertLenValue, err)
-			}
-			if len(v) != lenString {
-				return fmt.Errorf("%w: expected %d, got %d", ErrStringLengthMismatch, lenString, len(v))
-			}
-		case RegexpRuleTag:
-			compiledRegexp, err := getCompiledRegexp(rule[1])
-			if err != nil {
-				return ErrSysRegexpCompile
-			}
-			if !compiledRegexp.MatchString(v) {
-				return fmt.Errorf("%w: %s", ErrRegexpMatchFailed, rule[1])
-			}
-		case InRuleTag:
-			isMatched := false
-			for _, item := range strings.Split(rule[1], ",") {
-				if item == v {
-					isMatched = true
-				}
-			}
-			if !isMatched {
-				return fmt.Errorf("%w: %s in %s", ErrValueNotInList, v, rule[1])
-			}
-		}
-	}
-	return nil
+func intValidate(values []int, rules []Rule) ([]error, error) {
+	return validate(values, rules)
 }
 
-func getCompiledRegexp(pattern string) (*regexp.Regexp, error) {
-	regexpMutex.Lock()
-	defer regexpMutex.Unlock()
-
-	if compiled, exists := compiledRegexps[pattern]; exists {
-		return compiled, nil
-	}
-
-	compiled, err := regexp.Compile(pattern)
-	if err != nil {
-		return nil, err
-	}
-
-	compiledRegexps[pattern] = compiled
-	return compiled, nil
+func stringValidate(values []string, rules []Rule) ([]error, error) {
+	return validate(values, rules)
 }

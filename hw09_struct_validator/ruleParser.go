@@ -39,6 +39,15 @@ func parseRules(tag string) ([]Rule, error) {
 				return rules, fmt.Errorf("%w: %s", ErrSysInvalidRule, tag)
 			}
 			rules = append(rules, InRule{Values: enumValues})
+		case LenRuleTag:
+			lenValue, err := strconv.Atoi(rule[1])
+			if err != nil {
+				return rules, fmt.Errorf("%w: %w", ErrSysCantConvertLenValue, err)
+			}
+			rules = append(rules, LenRule{Value: lenValue})
+		case RegexpRuleTag:
+			rules = append(rules, RegexpRule{Value: rule[1]})
+
 		}
 	}
 	return rules, nil
