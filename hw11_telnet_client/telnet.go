@@ -37,7 +37,10 @@ func (client *telnetClient) Connect() (err error) {
 }
 
 func (client *telnetClient) Close() (err error) {
-	return client.connection.Close()
+	if err := client.connection.Close(); err != nil {
+		return errors.New("cannot close connection")
+	}
+	return nil
 }
 
 func (client *telnetClient) Send() (err error) {
