@@ -49,10 +49,6 @@ func main() {
 				return
 			default:
 				err := client.Send()
-				if errors.Is(err, io.EOF) {
-					fmt.Fprint(os.Stderr, "...EOF\n")
-					return
-				}
 				if err != nil {
 					log.Fatalln(err)
 				}
@@ -67,7 +63,12 @@ func main() {
 			case <-ctx.Done():
 				return
 			default:
-				if err := client.Receive(); err != nil {
+				err := client.Receive()
+				if errors.Is(err, io.EOF) {
+					fmt.Fprint(os.Stderr, "...EOF\n")
+					return
+				}
+				if err != nil {
 					log.Fatalln(err)
 				}
 			}
