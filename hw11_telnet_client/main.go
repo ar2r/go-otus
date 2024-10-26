@@ -38,7 +38,6 @@ func main() {
 	log.Printf("...Connected to %s\n", address)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
 
 	go func() {
 		if err := client.Send(); err != nil {
