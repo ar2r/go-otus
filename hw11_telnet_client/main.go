@@ -64,11 +64,11 @@ func main() {
 				return
 			default:
 				err := client.Receive()
-				if errors.Is(err, io.EOF) {
-					fmt.Fprint(os.Stderr, "...EOF\n")
-					return
-				}
 				if err != nil {
+					if errors.Is(err, io.EOF) {
+						fmt.Fprint(os.Stderr, "...EOF\n")
+						return
+					}
 					log.Fatalln(err)
 				}
 			}
