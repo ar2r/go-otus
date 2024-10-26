@@ -30,8 +30,8 @@ func main() {
 	client := NewTelnetClient(address, *timeout, os.Stdin, os.Stdout)
 
 	if err := client.Connect(); err != nil {
-		fmt.Fprintf(os.Stderr, "...failed to connect to %s error: %v\n", address, err)
-		os.Exit(1)
+		fmt.Fprintf(os.Stderr, "...failed to connect to %s\n", address)
+		return
 	}
 	fmt.Fprintf(os.Stderr, "...connected to %s\n", address)
 
