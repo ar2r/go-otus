@@ -23,7 +23,9 @@ func main() {
 	port := flag.Arg(1)
 	address := host + ":" + port
 
-	client := NewTelnetClient(address, *timeout, os.Stdin, os.Stdout)
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+
+	client := NewTelnetClient(ctx, cancel, address, *timeout, os.Stdin, os.Stdout)
 
 	if err := client.Connect(); err != nil {
 		fmt.Printf("Cannot connect to %s: %v\n", address, err)
@@ -35,33 +37,17 @@ func main() {
 		}
 	}()
 
-	log.Printf("...Connected to %s\n", address)
-
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-
 	go func() {
 		defer cancel()
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			if err := client.Send(); err != nil {
-				log.Fatalln(err)
-			}
+		if err := client.Send(); err != nil {
+			log.Fatalln(err)
 		}
 	}()
 
 	go func() {
 		defer cancel()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				if err := client.Receive(); err != nil {
-					log.Fatalln(err)
-				}
-			}
+		if err := client.Receive(); err != nil {
+			log.Fatalln(err)
 		}
 	}()
 

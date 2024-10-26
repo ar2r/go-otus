@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net"
@@ -15,6 +16,8 @@ type TelnetClient interface {
 }
 
 type telnetClient struct {
+	ctx        context.Context
+	cancel     context.CancelFunc
 	address    string
 	timeout    time.Duration
 	in         io.ReadCloser
@@ -22,8 +25,12 @@ type telnetClient struct {
 	connection net.Conn
 }
 
-func NewTelnetClient(address string, timeout time.Duration, in io.ReadCloser, out io.Writer) TelnetClient {
+func NewTelnetClient(
+	ctx context.Context, cancel context.CancelFunc, address string, timeout time.Duration, in io.ReadCloser, out io.Writer,
+) TelnetClient {
 	return &telnetClient{
+		ctx:     ctx,
+		cancel:  cancel,
 		address: address,
 		timeout: timeout,
 		in:      in,
@@ -32,8 +39,23 @@ func NewTelnetClient(address string, timeout time.Duration, in io.ReadCloser, ou
 }
 
 func (client *telnetClient) Connect() (err error) {
+	ctx, cancel := context.WithTimeout(client.ctx, client.timeout)
+	defer cancel()
+
 	client.connection, err = net.DialTimeout("tcp", client.address, client.timeout)
-	return
+	if err != nil {
+		return err
+	}
+
+	select {
+	case <-ctx.Done():
+		if err := client.Close(); err != nil {
+			return err
+		}
+		return ctx.Err()
+	default:
+		return nil
+	}
 }
 
 func (client *telnetClient) Close() (err error) {
@@ -48,20 +70,44 @@ func (client *telnetClient) Close() (err error) {
 
 func (client *telnetClient) Send() (err error) {
 	buffer := make([]byte, 1024)
-	n, err := client.in.Read(buffer)
-	if err != nil {
-		return
+	for {
+		select {
+		case <-client.ctx.Done():
+			return client.ctx.Err()
+		default:
+			n, err := client.in.Read(buffer)
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					return nil
+				}
+				return err
+			}
+			_, err = client.connection.Write(buffer[:n])
+			if err != nil {
+				return err
+			}
+		}
 	}
-	_, err = client.connection.Write(buffer[:n])
-	return
 }
 
 func (client *telnetClient) Receive() (err error) {
 	buffer := make([]byte, 1024)
-	n, err := client.connection.Read(buffer)
-	if err != nil {
-		return
+	for {
+		select {
+		case <-client.ctx.Done():
+			return client.ctx.Err()
+		default:
+			n, err := client.connection.Read(buffer)
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					return nil
+				}
+				return err
+			}
+			_, err = client.out.Write(buffer[:n])
+			if err != nil {
+				return err
+			}
+		}
 	}
-	_, err = client.out.Write(buffer[:n])
-	return
 }
