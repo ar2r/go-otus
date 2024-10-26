@@ -38,19 +38,32 @@ func main() {
 	log.Printf("...Connected to %s\n", address)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
 
 	go func() {
-		if err := client.Send(); err != nil {
-			log.Fatalln(err)
+		defer cancel()
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			if err := client.Send(); err != nil {
+				log.Fatalln(err)
+			}
 		}
-		cancel()
 	}()
 
 	go func() {
-		if err := client.Receive(); err != nil {
-			log.Fatalln(err)
+		defer cancel()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				if err := client.Receive(); err != nil {
+					log.Fatalln(err)
+				}
+			}
 		}
-		cancel()
 	}()
 
 	<-ctx.Done()
