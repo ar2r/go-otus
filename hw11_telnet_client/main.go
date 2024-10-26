@@ -50,7 +50,8 @@ func main() {
 			default:
 				err := client.Send()
 				if err != nil {
-					log.Fatalln(err)
+					fmt.Fprintf(os.Stderr, "Cannot send data: %v\n", err)
+					return
 				}
 			}
 		}
@@ -69,7 +70,8 @@ func main() {
 						fmt.Fprint(os.Stderr, "...EOF\n")
 						return
 					}
-					log.Fatalln(err)
+					fmt.Fprintf(os.Stderr, "Cannot receive data: %v\n", err)
+					return
 				}
 			}
 		}
