@@ -29,8 +29,8 @@ func TestTelnetClient(t *testing.T) {
 
 			timeout, err := time.ParseDuration("10s")
 			require.NoError(t, err)
-			ctx, cancel := context.WithCancel(context.Background())
-			client := NewTelnetClient(ctx, cancel, l.Addr().String(), timeout, io.NopCloser(in), out)
+
+			client := NewTelnetClient(context.Background(), l.Addr().String(), timeout, io.NopCloser(in), out)
 			require.NoError(t, client.Connect())
 			defer func() { require.NoError(t, client.Close()) }()
 
@@ -67,8 +67,8 @@ func TestTelnetClient(t *testing.T) {
 	t.Run("timeout", func(t *testing.T) {
 		timeout, err := time.ParseDuration("1ms")
 		require.NoError(t, err)
-		ctx, cancel := context.WithCancel(context.Background())
-		client := NewTelnetClient(ctx, cancel, "127.0.0.1:9999", timeout, nil, nil)
+
+		client := NewTelnetClient(context.Background(), "127.0.0.1:9999", timeout, nil, nil)
 		err = client.Connect()
 		require.Error(t, err)
 	})
@@ -89,8 +89,8 @@ func TestTelnetClient(t *testing.T) {
 
 			timeout, err := time.ParseDuration("10s")
 			require.NoError(t, err)
-			ctx, cancel := context.WithCancel(context.Background())
-			client := NewTelnetClient(ctx, cancel, l.Addr().String(), timeout, io.NopCloser(in), out)
+
+			client := NewTelnetClient(context.Background(), l.Addr().String(), timeout, io.NopCloser(in), out)
 			require.NoError(t, client.Connect())
 			defer func() { require.NoError(t, client.Close()) }()
 
@@ -131,8 +131,7 @@ func TestTelnetClient(t *testing.T) {
 		timeout, err := time.ParseDuration("10s")
 		require.NoError(t, err)
 
-		ctx, cancel := context.WithCancel(context.Background())
-		client := NewTelnetClient(ctx, cancel, "127.0.0.1:9999", timeout, io.NopCloser(in), out)
+		client := NewTelnetClient(context.Background(), "127.0.0.1:9999", timeout, io.NopCloser(in), out)
 		require.Error(t, client.Close())
 	})
 }

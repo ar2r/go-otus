@@ -26,8 +26,9 @@ type telnetClient struct {
 }
 
 func NewTelnetClient(
-	ctx context.Context, cancel context.CancelFunc, address string, timeout time.Duration, in io.ReadCloser, out io.Writer,
+	ctx context.Context, address string, timeout time.Duration, in io.ReadCloser, out io.Writer,
 ) TelnetClient {
+	ctx, cancel := context.WithCancel(ctx)
 	return &telnetClient{
 		ctx:     ctx,
 		cancel:  cancel,

@@ -25,7 +25,7 @@ func main() {
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
-	client := NewTelnetClient(ctx, cancel, address, *timeout, os.Stdin, os.Stdout)
+	client := NewTelnetClient(ctx, address, *timeout, os.Stdin, os.Stdout)
 
 	if err := client.Connect(); err != nil {
 		fmt.Printf("Cannot connect to %s: %v\n", address, err)
