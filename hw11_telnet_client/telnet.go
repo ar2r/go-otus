@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"io"
 	"net"
 	"time"
@@ -42,7 +43,7 @@ func (client *telnetClient) Close() (err error) {
 func (client *telnetClient) Send() (err error) {
 	buffer := make([]byte, 1024)
 	n, err := client.in.Read(buffer)
-	if err == io.EOF {
+	if errors.Is(err, io.EOF) {
 		return
 	}
 	if err != nil {
