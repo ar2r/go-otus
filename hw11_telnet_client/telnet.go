@@ -46,9 +46,6 @@ func (client *telnetClient) Close() (err error) {
 func (client *telnetClient) Send() (err error) {
 	buffer := make([]byte, 1024)
 	n, err := client.in.Read(buffer)
-	if errors.Is(err, io.EOF) {
-		return
-	}
 	if err != nil {
 		return
 	}
