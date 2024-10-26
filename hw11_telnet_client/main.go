@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -25,7 +27,7 @@ func main() {
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
-	client := NewTelnetClient(ctx, address, *timeout, os.Stdin, os.Stdout)
+	client := NewTelnetClient(address, *timeout, os.Stdin, os.Stdout)
 
 	if err := client.Connect(); err != nil {
 		fmt.Fprintf(os.Stderr, "...failed to connect to %s error: %v\n", address, err)
@@ -41,15 +43,34 @@ func main() {
 
 	go func() {
 		defer cancel()
-		if err := client.Send(); err != nil {
-			log.Fatalln(err)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				err := client.Send()
+				if errors.Is(err, io.EOF) {
+					fmt.Fprint(os.Stderr, "...EOF\n")
+					return
+				}
+				if err != nil {
+					log.Fatalln(err)
+				}
+			}
 		}
 	}()
 
 	go func() {
 		defer cancel()
-		if err := client.Receive(); err != nil {
-			log.Fatalln(err)
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				if err := client.Receive(); err != nil {
+					log.Fatalln(err)
+				}
+			}
 		}
 	}()
 
