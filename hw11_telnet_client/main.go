@@ -66,11 +66,12 @@ func main() {
 			default:
 				err := client.Receive()
 				if err != nil {
-					if errors.Is(err, syscall.ECONNRESET) {
+					switch {
+					case errors.Is(err, syscall.ECONNRESET):
 						fmt.Fprint(os.Stderr, "...Connection was reset by peer\n")
-					} else if errors.Is(err, io.EOF) {
+					case errors.Is(err, io.EOF):
 						fmt.Fprint(os.Stderr, "...EOF\n")
-					} else {
+					default:
 						fmt.Fprintf(os.Stderr, "Cannot receive data: %v\n", err)
 					}
 				}
