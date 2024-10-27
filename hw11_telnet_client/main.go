@@ -74,6 +74,7 @@ func main() {
 					default:
 						fmt.Fprintf(os.Stderr, "Cannot receive data: %v\n", err)
 					}
+					return
 				}
 			}
 		}
