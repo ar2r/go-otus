@@ -68,9 +68,9 @@ func main() {
 				if err != nil {
 					if errors.Is(err, io.EOF) {
 						fmt.Fprint(os.Stderr, "...EOF\n")
-						return
+					} else {
+						fmt.Fprintf(os.Stderr, "Cannot receive data: %v\n", err)
 					}
-					fmt.Fprintf(os.Stderr, "Cannot receive data: %v\n", err)
 					return
 				}
 			}
