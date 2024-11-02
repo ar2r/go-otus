@@ -1,5 +1,16 @@
-[logger]
-level = "INFO"
+[app]
+env = "prod" # dev | prod
+debug = true
 
-# TODO
-# ...
+[logger]
+level = "info" # debug | info | warn | error
+channel = "stdout" # stdout | stderr | file
+file = "logs/calendar.log"
+
+[database]
+host = "postgres"
+port = 5432
+database = "calendar"
+username = "root"
+password = "root"
+schema = "public"
