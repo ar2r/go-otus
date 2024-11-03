@@ -62,8 +62,8 @@ func (s *Storage) FindByDate(start time.Time) map[int]interface{} {
 	defer s.mu.RUnlock()
 	foundItems := make(map[int]interface{})
 	for k, v := range s.items {
-		if se, ok := v.(StartEndDt); ok {
-			if se.StartDt.Before(start) && se.EndDt.After(start) {
+		if startEndObject, ok := v.(StartEndDt); ok {
+			if startEndObject.StartDt.Before(start) && startEndObject.EndDt.After(start) {
 				foundItems[k] = v
 			}
 		}
