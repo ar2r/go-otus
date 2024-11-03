@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -41,16 +40,15 @@ func New(level string, channel string, filename string) *Logger {
 }
 
 func (l *Logger) Report() {
-	fmt.Println("Logger level: " + l.level)
-	fmt.Println("Logger channel: " + l.channel)
+	l.Debug("Logger level: " + l.level + " (" + l.channel + ")")
 	if l.filename != "" {
-		fmt.Println("Logger filename: " + l.filename)
+		l.Debug("Logger filename: " + l.filename)
 	}
 }
 
 func (l *Logger) Debug(msg string) {
 	if l.level == "debug" {
-		l.logger.Println("🩶 DEBUG: " + msg)
+		l.logger.Println("⚙️ DEBUG: " + msg)
 	}
 }
 

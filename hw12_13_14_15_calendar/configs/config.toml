@@ -1,9 +1,10 @@
 [app]
 env = "prod" # dev | prod
 debug = true
+storage = "memory" # memory | sql
 
 [logger]
-level = "info" # debug | info | warn | error
+level = "debug" # debug | info | warn | error
 channel = "stdout" # stdout | stderr | file
 file = "logs/calendar.log"
 
@@ -11,6 +12,6 @@ file = "logs/calendar.log"
 host = "postgres"
 port = 5432
 database = "calendar"
-username = "root"
-password = "root"
+username = "calendar"
+password = "calendar-pwd"
 schema = "public"

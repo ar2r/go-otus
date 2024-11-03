@@ -13,6 +13,7 @@ import (
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/http"
 	memorystorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage/sql"
 )
 
 var configFile string
@@ -47,9 +48,20 @@ func main() {
 		logg.Report()
 	}
 
+	var storage app.Storage
+
 	// Storage
-	storage := memorystorage.New()
-	logg.Warn("No storage initialized")
+	switch config.App.Storage {
+	case "memory":
+		storage = memorystorage.New()
+		logg.Info("Memory storage initialized")
+	case "sql":
+		storage = sqlstorage.New()
+		logg.Info("SQL storage initialized")
+	default:
+		logg.Error("Invalid storage type: " + config.App.Storage)
+		os.Exit(1)
+	}
 
 	// Application
 	calendar := app.New(logg, storage)

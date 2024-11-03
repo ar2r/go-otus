@@ -11,8 +11,9 @@ type Config struct {
 }
 
 type AppConf struct {
-	Env   string `toml:"env"`
-	Debug bool   `toml:"debug"`
+	Env     string `toml:"env"`
+	Debug   bool   `toml:"debug"`
+	Storage string `toml:"storage"`
 }
 
 type LoggerConf struct {
