@@ -3,6 +3,7 @@ package memorystorage
 import (
 	"errors"
 	"sync"
+	"time"
 )
 
 var (
@@ -44,9 +45,28 @@ func (s *Storage) Delete(id int) error {
 func (s *Storage) List() map[int]interface{} {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	copy := make(map[int]interface{})
+	foundItems := make(map[int]interface{})
 	for k, v := range s.items {
-		copy[k] = v
+		foundItems[k] = v
 	}
-	return copy
+	return foundItems
+}
+
+type StartEndDt struct {
+	StartDt time.Time //Дата и время события;
+	EndDt   time.Time //Длительность события (или дата и время окончания);
+}
+
+func (s *Storage) FindByDate(start time.Time) map[int]interface{} {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	foundItems := make(map[int]interface{})
+	for k, v := range s.items {
+		if se, ok := v.(StartEndDt); ok {
+			if se.StartDt.Before(start) && se.EndDt.After(start) {
+				foundItems[k] = v
+			}
+		}
+	}
+	return foundItems
 }
