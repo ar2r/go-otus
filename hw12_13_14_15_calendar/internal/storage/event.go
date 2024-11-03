@@ -1,7 +1,15 @@
 package storage
 
+import "time"
+
+// Событие - основная сущность, содержит в себе поля:
+
 type Event struct {
-	ID    string
-	Title string
-	// TODO
+	ID          string        //ID - уникальный идентификатор события (можно воспользоваться UUID);
+	Title       string        //Заголовок - короткий текст;
+	StartDt     time.Time     //Дата и время события;
+	EndDt       time.Time     //Длительность события (или дата и время окончания);
+	Description string        //Описание события - длинный текст, опционально;
+	UserId      int           //ID пользователя, владельца события;
+	Notify      time.Duration //За сколько времени высылать уведомление, опционально.
 }
