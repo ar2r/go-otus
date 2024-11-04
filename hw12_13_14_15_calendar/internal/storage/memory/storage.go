@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	ErrNotFound  = errors.New("event not found")
-	ErrIntersect = errors.New("intersecting events")
+	ErrNotFound = errors.New("event not found")
+	ErrDateBusy = errors.New("intersecting events")
 )
 
 type Storage struct {
@@ -29,7 +29,7 @@ func (s *Storage) Add(value interface{}) (int, error) {
 	if startEndObject, ok := value.(StartEndDt); ok {
 		foundItems := s.FindByPeriod(startEndObject.StartDt, startEndObject.EndDt)
 		if len(foundItems) > 0 {
-			return -1, ErrIntersect
+			return -1, ErrDateBusy
 		}
 	}
 

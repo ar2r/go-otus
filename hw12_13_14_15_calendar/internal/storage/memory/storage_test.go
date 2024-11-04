@@ -81,8 +81,8 @@ func TestAddIntersectingEvent(t *testing.T) {
 	// 2000-01-01 15:00:00 +0000 UTC
 	end2 := start2.Add(2 * time.Hour)
 	_, err = storage.Add(StartEndDt{StartDt: start2, EndDt: end2})
-	if err != ErrIntersect {
-		t.Errorf("expected error %v, got %v", ErrIntersect, err)
+	if err != ErrDateBusy {
+		t.Errorf("expected error %v, got %v", ErrDateBusy, err)
 	}
 }
 
