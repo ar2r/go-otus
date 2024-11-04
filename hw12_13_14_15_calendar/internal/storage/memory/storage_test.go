@@ -21,9 +21,21 @@ func TestStorage(t *testing.T) {
 			expected: map[int]interface{}{1: "item1"},
 		},
 		{
+			name: "Add multiple items",
+			operation: func(s *Storage) error {
+				s.Add("item1")
+				s.Add("item2")
+				return nil
+			},
+			expected: map[int]interface{}{
+				1: "item1",
+				2: "item2",
+			},
+		},
+		{
 			name: "Delete item",
 			operation: func(s *Storage) error {
-				id := s.Add("item1")
+				id, _ := s.Add("item1")
 				return s.Delete(id)
 			},
 			expected: map[int]interface{}{},
@@ -55,7 +67,9 @@ func TestStorage(t *testing.T) {
 
 func TestFindByDate(t *testing.T) {
 	storage := New()
-	start := time.Now()
+	// 2000-01-01 12:00:00 +0000 UTC
+	start := time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)
+	// 2000-01-01 14:00:00 +0000 UTC
 	end := start.Add(2 * time.Hour)
 	storage.Add(StartEndDt{StartDt: start, EndDt: end})
 
@@ -66,14 +80,14 @@ func TestFindByDate(t *testing.T) {
 	}{
 		{
 			name: "Find existing event",
-			date: start.Add(1 * time.Hour),
+			date: start,
 			expected: map[int]interface{}{
 				1: StartEndDt{StartDt: start, EndDt: end},
 			},
 		},
 		{
 			name:     "Find non-existing event",
-			date:     start.Add(3 * time.Hour),
+			date:     start.Add(24 * time.Hour),
 			expected: map[int]interface{}{},
 		},
 	}
@@ -83,6 +97,56 @@ func TestFindByDate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			got := storage.FindByDate(tt.date)
+			if !equal(got, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+}
+
+func TestFindByPeriod(t *testing.T) {
+	storage := New()
+	// 2000-01-01 12:00:00 +0000 UTC
+	start := time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)
+	// 2000-01-01 14:00:00 +0000 UTC
+	end := start.Add(2 * time.Hour)
+	storage.Add(StartEndDt{StartDt: start, EndDt: end})
+
+	tests := []struct {
+		name     string
+		startDt  time.Time
+		endDt    time.Time
+		expected map[int]interface{}
+	}{
+		{
+			name:    "Find overlapping event",
+			startDt: start.Add(-1 * time.Hour),
+			endDt:   start.Add(1 * time.Hour),
+			expected: map[int]interface{}{
+				1: StartEndDt{StartDt: start, EndDt: end},
+			},
+		},
+		{
+			name:     "Find non-overlapping event",
+			startDt:  start.Add(3 * time.Hour),
+			endDt:    start.Add(4 * time.Hour),
+			expected: map[int]interface{}{},
+		},
+		{
+			name:    "Find event within range",
+			startDt: start,
+			endDt:   end,
+			expected: map[int]interface{}{
+				1: StartEndDt{StartDt: start, EndDt: end},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := storage.FindByPeriod(tt.startDt, tt.endDt)
 			if !equal(got, tt.expected) {
 				t.Errorf("expected %v, got %v", tt.expected, got)
 			}
