@@ -65,6 +65,27 @@ func TestStorage(t *testing.T) {
 	}
 }
 
+func TestAddIntersectingEvent(t *testing.T) {
+	storage := New()
+	// 2000-01-01 12:00:00 +0000 UTC
+	start1 := time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)
+	// 2000-01-01 14:00:00 +0000 UTC
+	end1 := start1.Add(2 * time.Hour)
+	_, err := storage.Add(StartEndDt{StartDt: start1, EndDt: end1})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// 2000-01-01 13:00:00 +0000 UTC
+	start2 := start1.Add(1 * time.Hour)
+	// 2000-01-01 15:00:00 +0000 UTC
+	end2 := start2.Add(2 * time.Hour)
+	_, err = storage.Add(StartEndDt{StartDt: start2, EndDt: end2})
+	if err != ErrIntersect {
+		t.Errorf("expected error %v, got %v", ErrIntersect, err)
+	}
+}
+
 func TestFindByDate(t *testing.T) {
 	storage := New()
 	// 2000-01-01 12:00:00 +0000 UTC
