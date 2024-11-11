@@ -17,6 +17,15 @@ type Storage struct {
 	nextID int
 }
 
+type StartEndDt struct {
+	StartDt time.Time //Дата и время события;
+	EndDt   time.Time //Длительность события (или дата и время окончания);
+}
+
+type EventId struct {
+	Id int //Идентификатор события;
+}
+
 func New() *Storage {
 	return &Storage{
 		items:  make(map[int]interface{}),
@@ -41,6 +50,20 @@ func (s *Storage) Add(value interface{}) (int, error) {
 	return id, nil
 }
 
+func (s *Storage) Update(value interface{}) error {
+	// todo: Переписать на замену. Это временное рабочее решение.
+	if eventIdObject, ok := value.(EventId); ok {
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		if _, exists := s.items[eventIdObject.Id]; !exists {
+			return ErrNotFound
+		}
+		s.items[eventIdObject.Id] = value
+		return nil
+	}
+	return ErrNotFound
+}
+
 func (s *Storage) Delete(id int) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -59,11 +82,6 @@ func (s *Storage) List() map[int]interface{} {
 		foundItems[k] = v
 	}
 	return foundItems
-}
-
-type StartEndDt struct {
-	StartDt time.Time //Дата и время события;
-	EndDt   time.Time //Длительность события (или дата и время окончания);
 }
 
 // FindByDate Найти все события, которые происходят в указанный день.
@@ -101,4 +119,22 @@ func (s *Storage) FindByPeriod(startDt time.Time, endDt time.Time) map[int]inter
 		}
 	}
 	return foundItems
+}
+
+// FindByWeek Найти все события, которые происходят в указанной неделе.
+// Неделя начинается с понедельника.
+func (s *Storage) FindByWeek(startDt time.Time) map[int]interface{} {
+	startOfWeek := startDt.AddDate(0, 0, -int(startDt.Weekday()))
+	endOfWeek := startOfWeek.AddDate(0, 0, 7)
+
+	return s.FindByPeriod(startOfWeek, endOfWeek)
+}
+
+// FindByMonth Найти все события, которые происходят в указанном месяце.
+// Месяц начинается с первого числа.
+func (s *Storage) FindByMonth(startDt time.Time) map[int]interface{} {
+	startOfMonth := time.Date(startDt.Year(), startDt.Month(), 1, 0, 0, 0, 0, time.Local)
+	endOfMonth := startOfMonth.AddDate(0, 1, 0)
+
+	return s.FindByPeriod(startOfMonth, endOfMonth)
 }

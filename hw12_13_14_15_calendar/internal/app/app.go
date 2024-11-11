@@ -4,23 +4,29 @@ import (
 	"context"
 )
 
-type App struct { // TODO
+type App struct {
+	Logger  Logger
+	Storage Storage
 }
 
-type Logger interface { // TODO
+type Logger interface {
+	Debug(msg string)
+	Info(msg string)
+	Warn(msg string)
+	Error(msg string)
 }
 
-type Storage interface { // TODO
+type Storage interface {
+	CreateEvent(ctx context.Context, id, title string) error
 }
 
 func New(logger Logger, storage Storage) *App {
-	return &App{}
+	return &App{
+		Logger:  logger,
+		Storage: storage,
+	}
 }
 
 func (a *App) CreateEvent(ctx context.Context, id, title string) error {
-	// TODO
-	return nil
-	// return a.storage.CreateEvent(storage.Event{ID: id, Title: title})
+	return a.Storage.CreateEvent(ctx, id, title)
 }
-
-// TODO

@@ -6,6 +6,18 @@ import (
 	"time"
 )
 
+func equal(a, b map[int]interface{}) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for k, v := range a {
+		if b[k] != v {
+			return false
+		}
+	}
+	return true
+}
+
 func TestStorage(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -83,6 +95,50 @@ func TestAddIntersectingEvent(t *testing.T) {
 	_, err = storage.Add(StartEndDt{StartDt: start2, EndDt: end2})
 	if err != ErrDateBusy {
 		t.Errorf("expected error %v, got %v", ErrDateBusy, err)
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	storage := New()
+	// 2000-01-01 12:00:00 +0000 UTC
+	start := time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)
+	// 2000-01-01 14:00:00 +0000 UTC
+	end := start.Add(2 * time.Hour)
+	id, _ := storage.Add(StartEndDt{StartDt: start, EndDt: end})
+
+	tests := []struct {
+		name      string
+		operation func(s *Storage) error
+		expected  map[int]interface{}
+	}{
+		{
+			name: "Update item",
+			operation: func(s *Storage) error {
+				return s.Update(EventId{Id: id})
+			},
+			expected: map[int]interface{}{1: EventId{Id: id}},
+		},
+		{
+			name: "Update non-existent item",
+			operation: func(s *Storage) error {
+				return s.Update(EventId{Id: 999})
+			},
+			expected: map[int]interface{}{1: EventId{Id: id}},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			err := tt.operation(storage)
+			if err != nil && !errors.Is(err, ErrNotFound) {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got := storage.List(); !equal(got, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
 	}
 }
 
@@ -175,14 +231,80 @@ func TestFindByPeriod(t *testing.T) {
 	}
 }
 
-func equal(a, b map[int]interface{}) bool {
-	if len(a) != len(b) {
-		return false
+func TestFindByWeek(t *testing.T) {
+	storage := New()
+	// 2023-10-02 12:00:00 +0000 UTC (Monday)
+	start := time.Date(2023, 10, 2, 12, 0, 0, 0, time.UTC)
+	// 2023-10-02 14:00:00 +0000 UTC
+	end := start.Add(2 * time.Hour)
+	storage.Add(StartEndDt{StartDt: start, EndDt: end})
+
+	tests := []struct {
+		name     string
+		date     time.Time
+		expected map[int]interface{}
+	}{
+		{
+			name: "Find event in the same week",
+			date: start,
+			expected: map[int]interface{}{
+				1: StartEndDt{StartDt: start, EndDt: end},
+			},
+		},
+		{
+			name:     "Find event in a different week",
+			date:     start.AddDate(0, 0, 7),
+			expected: map[int]interface{}{},
+		},
 	}
-	for k, v := range a {
-		if b[k] != v {
-			return false
-		}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := storage.FindByWeek(tt.date)
+			if !equal(got, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
 	}
-	return true
+}
+
+func TestFindByMonth(t *testing.T) {
+	storage := New()
+	// 2023-10-01 12:00:00 +0000 UTC
+	start := time.Date(2023, 10, 1, 12, 0, 0, 0, time.UTC)
+	// 2023-10-01 14:00:00 +0000 UTC
+	end := start.Add(2 * time.Hour)
+	storage.Add(StartEndDt{StartDt: start, EndDt: end})
+
+	tests := []struct {
+		name     string
+		date     time.Time
+		expected map[int]interface{}
+	}{
+		{
+			name: "Find event in the same month",
+			date: start,
+			expected: map[int]interface{}{
+				1: StartEndDt{StartDt: start, EndDt: end},
+			},
+		},
+		{
+			name:     "Find event in a different month",
+			date:     start.AddDate(0, 1, 0),
+			expected: map[int]interface{}{},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := storage.FindByMonth(tt.date)
+			if !equal(got, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
 }
