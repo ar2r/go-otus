@@ -1,9 +1,12 @@
 package memorystorage
 
 import (
+	"context"
 	"errors"
 	"sync"
 	"time"
+
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage"
 )
 
 var (
@@ -31,6 +34,27 @@ func New() *Storage {
 		items:  make(map[int]interface{}),
 		nextID: 1,
 	}
+}
+
+func (s *Storage) CreateEvent(ctx context.Context, id, title string) error {
+	// Обработать ошибку, если не удалось получить ID пользователя из контекста
+	userId := ctx.Value("userId").(int)
+
+	event := storage.Event{
+		ID:          id,
+		Title:       title,
+		StartDt:     time.Now(),
+		EndDt:       time.Now().Add(time.Hour),
+		Description: "",
+		UserId:      userId,
+		Notify:      0,
+	}
+
+	if _, err := s.Add(event); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *Storage) Add(value interface{}) (int, error) {

@@ -16,7 +16,10 @@ import (
 	sqlstorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage/sql"
 )
 
-var configFile string
+var (
+	configFile string
+	logg       *logger.Logger
+)
 
 func init() {
 	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
@@ -38,7 +41,7 @@ func main() {
 	}
 
 	// Logger
-	logg := logger.New(
+	logg = logger.New(
 		config.Logger.Level,
 		config.Logger.Channel,
 		config.Logger.Filename,

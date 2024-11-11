@@ -1,0 +1,17 @@
+[app]
+env = "prod" # dev | prod
+debug = false
+storage = "memory" # memory | sql
+
+[logger]
+level = "debug" # debug | info | warn | error
+channel = "stdout" # stdout | stderr | file
+# file = "logs/calendar.log"
+
+[database]
+host = "postgres"
+port = 5432
+database = "calendar"
+username = "calendar"
+password = "calendar-pwd"
+schema = "public"
