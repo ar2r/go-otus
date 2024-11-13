@@ -26,7 +26,7 @@ func equal(a, b []storage.Event) bool {
 
 func TestStorage(t *testing.T) {
 
-	event := createStubEvent("item1", time.Time{}, time.Time{})
+	event := createStubEvent("event 1", time.Time{}, time.Time{})
 
 	tests := []struct {
 		name      string
@@ -77,7 +77,7 @@ func TestStorage(t *testing.T) {
 
 func TestUpdateEvent(t *testing.T) {
 	memStorage := New()
-	event := createStubEvent("item1", time.Time{}, time.Time{})
+	event := createStubEvent("event 1", time.Time{}, time.Time{})
 	memStorage.Add(ctx, event)
 
 	event.Title = "item2"
@@ -89,7 +89,7 @@ func TestUpdateEvent(t *testing.T) {
 
 func TestUpdateNotExistentEvent(t *testing.T) {
 	memStorage := New()
-	event := createStubEvent("item1", time.Time{}, time.Time{})
+	event := createStubEvent("item 1", time.Time{}, time.Time{})
 	_, err := memStorage.Update(ctx, event)
 	if !errors.Is(err, storage.ErrNotFound) {
 		t.Errorf("expected error %v, got %v", storage.ErrNotFound, err)
@@ -102,10 +102,10 @@ func TestUpdate(t *testing.T) {
 	start := time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)
 	// 2000-01-01 14:00:00 +0000 UTC
 	end := start.Add(2 * time.Hour)
-	event1 := createStubEvent("item1", start, end)
+	event1 := createStubEvent("event 1", start, end)
 
 	event2 := event1
-	event2.Title = "new title"
+	event2.Title = "event 2"
 
 	tests := []struct {
 		name      string
@@ -149,44 +149,46 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
-//func TestFindByDate(t *testing.T) {
-//	storage := New()
-//	// 2000-01-01 12:00:00 +0000 UTC
-//	start := time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)
-//	// 2000-01-01 14:00:00 +0000 UTC
-//	end := start.Add(2 * time.Hour)
-//	storage.Add(StartEndDt{StartDt: start, EndDt: end})
-//
-//	tests := []struct {
-//		name     string
-//		date     time.Time
-//		expected map[int]interface{}
-//	}{
-//		{
-//			name: "Find existing event",
-//			date: start,
-//			expected: map[int]interface{}{
-//				1: StartEndDt{StartDt: start, EndDt: end},
-//			},
-//		},
-//		{
-//			name:     "Find non-existing event",
-//			date:     start.Add(24 * time.Hour),
-//			expected: map[int]interface{}{},
-//		},
-//	}
-//
-//	for _, tt := range tests {
-//		tt := tt
-//		t.Run(tt.name, func(t *testing.T) {
-//			t.Parallel()
-//			got := storage.FindByDate(tt.date)
-//			if !equal(got, tt.expected) {
-//				t.Errorf("expected %v, got %v", tt.expected, got)
-//			}
-//		})
-//	}
-//}
+func TestFindByDate(t *testing.T) {
+	memStorage := New()
+
+	// 2000-01-01 12:00:00 +0000 UTC
+	start := time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)
+	// 2000-01-01 14:00:00 +0000 UTC
+	end := start.Add(2 * time.Hour)
+
+	event1 := createStubEvent("event 1", start, end)
+	memStorage.Add(ctx, event1)
+
+	tests := []struct {
+		name     string
+		date     time.Time
+		expected []storage.Event
+	}{
+		{
+			name:     "Find existing event",
+			date:     start,
+			expected: []storage.Event{event1},
+		},
+		{
+			name:     "Find non-existing event",
+			date:     start.Add(24 * time.Hour),
+			expected: []storage.Event{},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got, _ := memStorage.ListByDate(ctx, tt.date)
+			if !equal(got, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+}
+
 //
 //func TestFindByPeriod(t *testing.T) {
 //	storage := New()

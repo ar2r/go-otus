@@ -60,8 +60,8 @@ func (s *Storage) List(_ context.Context) ([]storage.Event, error) {
 	return foundItems, nil
 }
 
-// FindByDate Найти все события, которые происходят в указанный день.
-func (s *Storage) FindByDate(_ context.Context, start time.Time) ([]storage.Event, error) {
+// ListByDate Найти все события, которые происходят в указанный день.
+func (s *Storage) ListByDate(_ context.Context, start time.Time) ([]storage.Event, error) {
 	// Обнулить у даты часы минуты секунды
 	startOfDay := time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, time.Local).Add(-1 * time.Nanosecond)
 	endOfDay := time.Date(start.Year(), start.Month(), start.Day()+1, 0, 0, 0, 0, time.Local)
