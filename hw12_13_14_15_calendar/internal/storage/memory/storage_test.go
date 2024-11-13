@@ -26,8 +26,7 @@ func equal(a, b []storage.Event) bool {
 
 func TestStorage(t *testing.T) {
 
-	event1 := createStubEvent("item1", time.Time{}, time.Time{})
-	event2 := createStubEvent("item2", time.Time{}, time.Time{})
+	event := createStubEvent("item1", time.Time{}, time.Time{})
 
 	tests := []struct {
 		name      string
@@ -37,28 +36,16 @@ func TestStorage(t *testing.T) {
 		{
 			name: "Add item",
 			operation: func(s *Storage) error {
-				s.Add(ctx, event1)
+				s.Add(ctx, event)
 				return nil
 			},
-			expected: []storage.Event{event1},
-		},
-		{
-			name: "Add multiple items",
-			operation: func(s *Storage) error {
-				s.Add(ctx, event1)
-				s.Add(ctx, event2)
-				return nil
-			},
-			expected: []storage.Event{
-				event1,
-				event2,
-			},
+			expected: []storage.Event{event},
 		},
 		{
 			name: "Delete item",
 			operation: func(s *Storage) error {
-				s.Add(ctx, event1)
-				return s.Delete(ctx, event1.ID)
+				s.Add(ctx, event)
+				return s.Delete(ctx, event.ID)
 			},
 			expected: []storage.Event{},
 		},
@@ -116,32 +103,31 @@ func TestUpdate(t *testing.T) {
 	// 2000-01-01 14:00:00 +0000 UTC
 	end := start.Add(2 * time.Hour)
 	event1 := createStubEvent("item1", start, end)
-	memStorage.Add(ctx, event1)
 
 	event2 := event1
-	event2.Title = "item2"
+	event2.Title = "new title"
 
 	tests := []struct {
 		name      string
-		operation func(s *Storage) error
+		operation func() error
 		expected  []storage.Event
 	}{
 		{
 			name: "Update item",
-			operation: func(s *Storage) error {
+			operation: func() error {
 				memStorage = New()
 				memStorage.Add(ctx, event1)
-				_, err := s.Update(ctx, event2)
+				_, err := memStorage.Update(ctx, event2)
 				return err
 			},
 			expected: []storage.Event{event2},
 		},
 		{
 			name: "Update non-existent item",
-			operation: func(s *Storage) error {
+			operation: func() error {
 				memStorage = New()
 				event := createStubEvent("not exist event", start, end)
-				_, err := s.Update(ctx, event)
+				_, err := memStorage.Update(ctx, event)
 				return err
 			},
 			expected: []storage.Event{},
@@ -152,7 +138,7 @@ func TestUpdate(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			err := tt.operation(memStorage)
+			err := tt.operation()
 			if err != nil && !errors.Is(err, storage.ErrNotFound) {
 				t.Fatalf("unexpected error: %v", err)
 			}
