@@ -276,45 +276,43 @@ func TestListByWeek(t *testing.T) {
 	}
 }
 
-//
-//func TestFindByMonth(t *testing.T) {
-//	storage := New()
-//	// 2023-10-01 12:00:00 +0000 UTC
-//	start := time.Date(2023, 10, 1, 12, 0, 0, 0, time.UTC)
-//	// 2023-10-01 14:00:00 +0000 UTC
-//	end := start.Add(2 * time.Hour)
-//	storage.Add(context.Background(), storage2.Event{StartDt: start, EndDt: end})
-//
-//	tests := []struct {
-//		name     string
-//		date     time.Time
-//		expected map[int]interface{}
-//	}{
-//		{
-//			name: "Find event in the same month",
-//			date: start,
-//			expected: map[int]interface{}{
-//				1: StartEndDt{StartDt: start, EndDt: end},
-//			},
-//		},
-//		{
-//			name:     "Find event in a different month",
-//			date:     start.AddDate(0, 1, 0),
-//			expected: map[int]interface{}{},
-//		},
-//	}
-//
-//	for _, tt := range tests {
-//		tt := tt
-//		t.Run(tt.name, func(t *testing.T) {
-//			t.Parallel()
-//			got := storage.ListByMonth(ctx, tt.date)
-//			if !equal(got, tt.expected) {
-//				t.Errorf("expected %v, got %v", tt.expected, got)
-//			}
-//		})
-//	}
-//}
+func TestListByMonth(t *testing.T) {
+	memStorage := New()
+	// 2023-10-01 12:00:00 +0000 UTC
+	start := time.Date(2023, 10, 1, 12, 0, 0, 0, time.UTC)
+	// 2023-10-01 14:00:00 +0000 UTC
+	end := start.Add(2 * time.Hour)
+	event := createStubEvent("event 1", start, end)
+	memStorage.Add(ctx, event)
+
+	tests := []struct {
+		name     string
+		date     time.Time
+		expected []storage.Event
+	}{
+		{
+			name:     "List event in the same month",
+			date:     start,
+			expected: []storage.Event{event},
+		},
+		{
+			name:     "List event in a different month",
+			date:     start.AddDate(0, 1, 0),
+			expected: []storage.Event{},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got, _ := memStorage.ListByMonth(ctx, tt.date)
+			if !equal(got, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+}
 
 func createStubEvent(name string, startDt time.Time, endDt time.Time) storage.Event {
 	uuid, _ := uuid.NewV7()
