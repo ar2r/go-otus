@@ -72,7 +72,7 @@ func main() {
 	logg.Info("App initialized")
 
 	// HTTP server
-	server := internalhttp.NewServer(calendar)
+	server := internalhttp.NewServer(logg, calendar, config.Server)
 	logg.Info("HTTP server initialized")
 
 	// Signal handler

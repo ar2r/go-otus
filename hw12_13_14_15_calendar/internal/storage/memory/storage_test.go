@@ -62,7 +62,6 @@ func TestStorage(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			memStorage := New()
 			err := tt.operation(memStorage)
 			if err != nil && !errors.Is(err, storage.ErrNotFound) {
@@ -137,7 +136,6 @@ func TestUpdate(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			err := tt.operation()
 			if err != nil && !errors.Is(err, storage.ErrNotFound) {
 				t.Fatalf("unexpected error: %v", err)
@@ -180,7 +178,6 @@ func TestListByDate(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			got, _ := memStorage.ListByDate(ctx, tt.date)
 			if !equal(got, tt.expected) {
 				t.Errorf("expected %v, got %v", tt.expected, got)
@@ -229,7 +226,6 @@ func TestListByPeriod(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			got, _ := memStorage.ListByPeriod(ctx, tt.startDt, tt.endDt)
 			if !equal(got, tt.expected) {
 				t.Errorf("expected %v, got %v", tt.expected, got)
@@ -267,7 +263,6 @@ func TestListByWeek(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			got, _ := memStorage.ListByWeek(ctx, tt.date)
 			if !equal(got, tt.expected) {
 				t.Errorf("expected %v, got %v", tt.expected, got)
@@ -305,7 +300,6 @@ func TestListByMonth(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			got, _ := memStorage.ListByMonth(ctx, tt.date)
 			if !equal(got, tt.expected) {
 				t.Errorf("expected %v, got %v", tt.expected, got)
