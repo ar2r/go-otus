@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
+	config2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/http"
 	memorystorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage/memory"
-	sqlstorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage/sql"
 )
 
 var (
@@ -34,7 +34,7 @@ func main() {
 	}
 
 	// Обработка конфига
-	config, err := LoadConfig(configFile)
+	config, err := config2.LoadConfig(configFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to load config: %v\n", err)
 		os.Exit(1)
@@ -59,7 +59,8 @@ func main() {
 		storage = memorystorage.New()
 		logg.Info("Memory storage initialized")
 	case "sql":
-		storage = sqlstorage.New()
+		//storage = sqlstorage.New()
+		storage = memorystorage.New()
 		logg.Info("SQL storage initialized")
 	default:
 		logg.Error("Invalid storage type: " + config.App.Storage)
@@ -71,7 +72,7 @@ func main() {
 	logg.Info("App initialized")
 
 	// HTTP server
-	server := internalhttp.NewServer(logg, calendar)
+	server := internalhttp.NewServer(calendar)
 	logg.Info("HTTP server initialized")
 
 	// Signal handler

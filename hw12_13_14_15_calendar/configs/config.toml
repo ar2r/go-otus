@@ -3,6 +3,10 @@ env = "prod" # dev | prod
 debug = true
 storage = "memory" # memory | sql
 
+[server]
+host = ""
+port = 8888
+
 [logger]
 level = "debug" # debug | info | warn | error
 channel = "stdout" # stdout | stderr | file
