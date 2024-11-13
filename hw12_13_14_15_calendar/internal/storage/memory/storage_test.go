@@ -149,7 +149,7 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
-func TestFindByDate(t *testing.T) {
+func TestListByDate(t *testing.T) {
 	memStorage := New()
 
 	// 2000-01-01 12:00:00 +0000 UTC
@@ -166,12 +166,12 @@ func TestFindByDate(t *testing.T) {
 		expected []storage.Event
 	}{
 		{
-			name:     "Find existing event",
+			name:     "List existing event",
 			date:     start,
 			expected: []storage.Event{event1},
 		},
 		{
-			name:     "Find non-existing event",
+			name:     "List non-existing event",
 			date:     start.Add(24 * time.Hour),
 			expected: []storage.Event{},
 		},
@@ -189,56 +189,55 @@ func TestFindByDate(t *testing.T) {
 	}
 }
 
-//
-//func TestFindByPeriod(t *testing.T) {
-//	storage := New()
-//	// 2000-01-01 12:00:00 +0000 UTC
-//	start := time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)
-//	// 2000-01-01 14:00:00 +0000 UTC
-//	end := start.Add(2 * time.Hour)
-//	storage.Add(StartEndDt{StartDt: start, EndDt: end})
-//
-//	tests := []struct {
-//		name     string
-//		startDt  time.Time
-//		endDt    time.Time
-//		expected map[int]interface{}
-//	}{
-//		{
-//			name:    "Find overlapping event",
-//			startDt: start.Add(-1 * time.Hour),
-//			endDt:   start.Add(1 * time.Hour),
-//			expected: map[int]interface{}{
-//				1: StartEndDt{StartDt: start, EndDt: end},
-//			},
-//		},
-//		{
-//			name:     "Find non-overlapping event",
-//			startDt:  start.Add(3 * time.Hour),
-//			endDt:    start.Add(4 * time.Hour),
-//			expected: map[int]interface{}{},
-//		},
-//		{
-//			name:    "Find event within range",
-//			startDt: start,
-//			endDt:   end,
-//			expected: map[int]interface{}{
-//				1: StartEndDt{StartDt: start, EndDt: end},
-//			},
-//		},
-//	}
-//
-//	for _, tt := range tests {
-//		tt := tt
-//		t.Run(tt.name, func(t *testing.T) {
-//			t.Parallel()
-//			got := storage.ListByPeriod(tt.startDt, tt.endDt)
-//			if !equal(got, tt.expected) {
-//				t.Errorf("expected %v, got %v", tt.expected, got)
-//			}
-//		})
-//	}
-//}
+func TestListByPeriod(t *testing.T) {
+	memStorage := New()
+	// 2000-01-01 12:00:00 +0000 UTC
+	start := time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)
+	// 2000-01-01 14:00:00 +0000 UTC
+	end := start.Add(2 * time.Hour)
+
+	event := createStubEvent("event 1", start, end)
+
+	memStorage.Add(ctx, event)
+
+	tests := []struct {
+		name     string
+		startDt  time.Time
+		endDt    time.Time
+		expected []storage.Event
+	}{
+		{
+			name:     "List overlapping event",
+			startDt:  start.Add(-1 * time.Hour),
+			endDt:    start.Add(1 * time.Hour),
+			expected: []storage.Event{event},
+		},
+		{
+			name:     "List non-overlapping event",
+			startDt:  start.Add(3 * time.Hour),
+			endDt:    start.Add(4 * time.Hour),
+			expected: []storage.Event{},
+		},
+		{
+			name:     "List event within range",
+			startDt:  start,
+			endDt:    end,
+			expected: []storage.Event{event},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got, _ := memStorage.ListByPeriod(ctx, tt.startDt, tt.endDt)
+			if !equal(got, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+}
+
 //
 //func TestFindByWeek(t *testing.T) {
 //	storage := New()
