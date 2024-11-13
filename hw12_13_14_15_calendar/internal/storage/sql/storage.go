@@ -18,3 +18,8 @@ func (s *Storage) Close(ctx context.Context) error {
 	// TODO
 	return nil
 }
+
+func (s *Storage) CreateEvent(ctx context.Context, id, title string) error {
+	//TODO implement me
+	panic("implement me")
+}
