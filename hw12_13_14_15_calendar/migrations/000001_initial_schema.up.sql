@@ -7,6 +7,9 @@ CREATE TABLE users
     name VARCHAR(256)
 );
 
+INSERT INTO users (id, name)
+VALUES ('00000000-0000-0000-0000-000000000000', 'Alice');
+
 CREATE TABLE events
 (
     id          UUID PRIMARY KEY,
@@ -20,3 +23,4 @@ CREATE TABLE events
         FOREIGN KEY (user_id)
             REFERENCES users (id)
 );
+
