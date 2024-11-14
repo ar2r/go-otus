@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/cmd/db_migration"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/cmd/migration"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/db"
@@ -46,7 +46,7 @@ func main() {
 	}
 
 	if flag.Arg(0) == "migrate" {
-		if err := db_migration.Run(logg, myConfig.Database, true); err != nil {
+		if err := migration.Run(logg, myConfig.Database, true); err != nil {
 			logg.Error(fmt.Sprintf("%v", err))
 		}
 		return

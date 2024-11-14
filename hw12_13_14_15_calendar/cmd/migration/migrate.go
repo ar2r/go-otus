@@ -1,4 +1,4 @@
-package db_migration
+package migration
 
 import (
 	"errors"
@@ -6,7 +6,9 @@ import (
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/golang-migrate/migrate/v4"
+	// Register the pgx database driver.
 	_ "github.com/golang-migrate/migrate/v4/database/pgx"
+	// Register the file source for migrations.
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
@@ -31,25 +33,25 @@ func Run(logg Logger, conf config.DatabaseConf, rerun bool) error {
 	logg.Info("Loading migrations...")
 	m, err := migrate.New("file://migrations", dsn)
 	if err != nil {
-		return fmt.Errorf("db_migration: error while create connection: %w", err)
+		return fmt.Errorf("migration: error while create connection: %w", err)
 	}
 
 	if rerun {
 		logg.Info("Rollback migrations...")
 		if err = m.Down(); err != nil {
 			if !errors.Is(err, migrate.ErrNoChange) {
-				return fmt.Errorf("db_migration: %w", err)
+				return fmt.Errorf("migration: %w", err)
 			}
-			logg.Info(fmt.Sprintf("db_migration: %s", err))
+			logg.Info(fmt.Sprintf("migration: %s", err))
 		}
 	}
 
 	logg.Info("Run migrations...")
 	if err = m.Up(); err != nil {
 		if !errors.Is(err, migrate.ErrNoChange) {
-			return fmt.Errorf("db_migration: %w", err)
+			return fmt.Errorf("migration: %w", err)
 		}
-		logg.Info(fmt.Sprintf("db_migration: %s", err))
+		logg.Info(fmt.Sprintf("migration: %s", err))
 	}
 
 	logg.Info("Closing database connection...")

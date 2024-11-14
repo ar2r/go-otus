@@ -8,7 +8,6 @@ import (
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/logger"
-
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

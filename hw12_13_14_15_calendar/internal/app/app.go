@@ -3,10 +3,9 @@ package app
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type App struct {
