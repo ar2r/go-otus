@@ -6,10 +6,12 @@ import (
 	"os"
 )
 
-const DEBUG = "debug"
-const INFO = "info"
-const WARN = "warn"
-const ERROR = "error"
+const (
+	DEBUG = "debug"
+	INFO  = "info"
+	WARN  = "warn"
+	ERROR = "error"
+)
 
 type Logger struct {
 	level    string
@@ -24,7 +26,7 @@ func New(level string, channel string, filename string) *Logger {
 
 	switch channel {
 	case "file":
-		writer, err = os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		writer, err = os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
 		if err != nil {
 			log.Fatal("Failed to open log file")
 		}

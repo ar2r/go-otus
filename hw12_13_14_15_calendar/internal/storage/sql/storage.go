@@ -22,12 +22,12 @@ func New(pgxPool *pgxpool.Pool) *Storage {
 // CreateEvent Создать событие с проверками на возможные пересечения с другими событиями.
 func (s *Storage) CreateEvent(ctx context.Context, id uuid.UUID, title string) error {
 	event := storage.Event{
-		Id:          id,
+		ID:          id,
 		Title:       title,
 		Description: "",
 		StartDt:     time.Time{},
 		EndDt:       time.Time{},
-		UserId:      uuid.Nil,
+		UserID:      uuid.Nil,
 	}
 
 	_, err := s.Add(ctx, event)
@@ -40,12 +40,12 @@ func (s *Storage) Get(ctx context.Context, id uuid.UUID) (*storage.Event, error)
 
 	var event storage.Event
 	err := row.Scan(
-		&event.Id,
+		&event.ID,
 		&event.Title,
 		&event.Description,
 		&event.StartDt,
 		&event.EndDt,
-		&event.UserId,
+		&event.UserID,
 		&event.Notify)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (s *Storage) Get(ctx context.Context, id uuid.UUID) (*storage.Event, error)
 func (s *Storage) Add(ctx context.Context, event storage.Event) (*storage.Event, error) {
 	_, err := s.PgxPool.Exec(ctx,
 		"INSERT INTO events (id, title, description, start_dt, end_dt, user_id, notify) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-		event.Id, event.Title, event.Description, event.StartDt, event.EndDt, event.UserId, event.Notify)
+		event.ID, event.Title, event.Description, event.StartDt, event.EndDt, event.UserID, event.Notify)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (s *Storage) Add(ctx context.Context, event storage.Event) (*storage.Event,
 func (s *Storage) Update(ctx context.Context, event storage.Event) (*storage.Event, error) {
 	_, err := s.PgxPool.Exec(ctx,
 		"UPDATE events SET title = $1, description = $2, start_dt = $3, end_dt = $4, user_id = $5, notify = $6 WHERE id = $7",
-		event.Title, event.Description, event.StartDt, event.EndDt, event.UserId, event.Notify, event.Id)
+		event.Title, event.Description, event.StartDt, event.EndDt, event.UserID, event.Notify, event.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -97,12 +97,12 @@ func (s *Storage) List(ctx context.Context) ([]storage.Event, error) {
 	for rows.Next() {
 		var event storage.Event
 		err := rows.Scan(
-			&event.Id,
+			&event.ID,
 			&event.Title,
 			&event.Description,
 			&event.StartDt,
 			&event.EndDt,
-			&event.UserId,
+			&event.UserID,
 			&event.Notify)
 		if err != nil {
 			return nil, err

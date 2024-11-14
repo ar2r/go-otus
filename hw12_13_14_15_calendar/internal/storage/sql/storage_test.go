@@ -43,12 +43,12 @@ func TestStorage_Add(t *testing.T) {
 	pool := setupTestDB(t)
 
 	event := storage.Event{
-		Id:          uuid.New(),
+		ID:          uuid.New(),
 		Title:       "Test Event",
 		Description: "This is a test event",
 		StartDt:     time.Now(),
 		EndDt:       time.Now().Add(1 * time.Hour),
-		UserId:      uuid.Nil,
+		UserID:      uuid.Nil,
 		Notify:      time.Minute * 10,
 	}
 
