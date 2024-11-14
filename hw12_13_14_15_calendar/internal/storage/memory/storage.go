@@ -10,11 +10,43 @@ import (
 )
 
 type Storage struct {
+	mu    sync.RWMutex
 	items sync.Map
 }
 
 func New() *Storage {
 	return &Storage{}
+}
+
+// CreateEvent Создать событие с проверками на возможные пересечения с другими событиями.
+func (s *Storage) CreateEvent(ctx context.Context, id uuid.UUID, title string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	userId := ctx.Value(storage.CtxKeyUserID).(uuid.UUID)
+	if userId == uuid.Nil {
+		return storage.ErrNoUserID
+	}
+
+	event := storage.Event{
+		ID:      id,
+		Title:   title,
+		StartDt: time.Now(),
+		EndDt:   time.Now().Add(time.Hour),
+		UserId:  userId,
+	}
+
+	foundEvents, err := s.ListByPeriod(ctx, event.StartDt, event.EndDt)
+	if err != nil {
+		return err
+	}
+
+	if len(foundEvents) > 0 {
+		return storage.ErrDateBusy
+	}
+
+	_, err = s.Add(ctx, event)
+	return err
 }
 
 // Get Вернуть событие по идентификатору.

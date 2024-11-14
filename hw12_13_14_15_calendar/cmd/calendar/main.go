@@ -4,13 +4,14 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/cmd/db_migration"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/db"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/cmd/db_migration"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/db"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 	config2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
@@ -79,7 +80,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	var pgxPool
+	var pgxPool *pgxpool.Pool
 
 	if config.App.Storage == "sql" {
 		pgxPool, err = db.InitPgxConnection(ctx, config.Database, logg)

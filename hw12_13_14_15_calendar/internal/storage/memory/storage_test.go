@@ -309,7 +309,8 @@ func TestListByMonth(t *testing.T) {
 }
 
 func createStubEvent(name string, startDt time.Time, endDt time.Time) storage.Event {
-	uuid, _ := uuid.NewV7()
+	eventId, _ := uuid.NewV7()
+	userId, _ := uuid.NewV7()
 	if startDt.IsZero() {
 		startDt = time.Date(2023, 10, 1, 12, 0, 0, 0, time.UTC)
 	}
@@ -317,12 +318,12 @@ func createStubEvent(name string, startDt time.Time, endDt time.Time) storage.Ev
 		endDt = startDt.Add(time.Hour)
 	}
 	return storage.Event{
-		ID:          uuid,
+		ID:          eventId,
 		Title:       name,
 		StartDt:     startDt,
 		EndDt:       endDt,
 		Description: "description",
-		UserId:      1,
+		UserId:      userId,
 		Notify:      time.Second,
 	}
 }
