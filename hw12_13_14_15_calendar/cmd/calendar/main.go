@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/cmd/db_migration"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/db"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"os"
 	"os/signal"
 	"syscall"
@@ -27,6 +29,7 @@ func init() {
 }
 
 func main() {
+	ctx := context.Background()
 	flag.Parse()
 
 	if flag.Arg(0) == "version" {
@@ -76,8 +79,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	var pgxPool
+
+	if config.App.Storage == "sql" {
+		pgxPool, err = db.InitPgxConnection(ctx, config.Database, logg)
+		if err != nil {
+			logg.Error(fmt.Sprintf("failed to create connetion to dictionaries db: %s", err))
+		}
+	}
 	// Application
-	calendar := app.New(logg, storage)
+	calendar := app.New(logg, storage, pgxPool)
 	logg.Info("App initialized")
 
 	// HTTP server
