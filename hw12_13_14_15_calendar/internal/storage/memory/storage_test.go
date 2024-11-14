@@ -45,7 +45,7 @@ func TestStorage(t *testing.T) {
 			name: "Delete item",
 			operation: func(s *Storage) error {
 				s.Add(ctx, event)
-				return s.Delete(ctx, event.ID)
+				return s.Delete(ctx, event.Id)
 			},
 			expected: []storage.Event{},
 		},
@@ -318,7 +318,7 @@ func createStubEvent(name string, startDt time.Time, endDt time.Time) storage.Ev
 		endDt = startDt.Add(time.Hour)
 	}
 	return storage.Event{
-		ID:          eventId,
+		Id:          eventId,
 		Title:       name,
 		StartDt:     startDt,
 		EndDt:       endDt,

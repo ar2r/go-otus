@@ -29,7 +29,7 @@ func (s *Storage) CreateEvent(ctx context.Context, id uuid.UUID, title string) e
 	}
 
 	event := storage.Event{
-		ID:      id,
+		Id:      id,
 		Title:   title,
 		StartDt: time.Now(),
 		EndDt:   time.Now().Add(time.Hour),
@@ -59,19 +59,19 @@ func (s *Storage) Get(_ context.Context, id uuid.UUID) (*storage.Event, error) {
 
 // Add Добавить событие.
 func (s *Storage) Add(_ context.Context, event storage.Event) (*storage.Event, error) {
-	s.items.Store(event.ID, event)
-	v, _ := s.items.Load(event.ID)
+	s.items.Store(event.Id, event)
+	v, _ := s.items.Load(event.Id)
 	result := v.(storage.Event)
 	return &result, nil
 }
 
 // Update Обновить событие.
 func (s *Storage) Update(_ context.Context, event storage.Event) (*storage.Event, error) {
-	if _, exists := s.items.Load(event.ID); !exists {
+	if _, exists := s.items.Load(event.Id); !exists {
 		return nil, storage.ErrNotFound
 	}
-	s.items.Store(event.ID, event)
-	v, _ := s.items.Load(event.ID)
+	s.items.Store(event.Id, event)
+	v, _ := s.items.Load(event.Id)
 	result := v.(storage.Event)
 	return &result, nil
 }

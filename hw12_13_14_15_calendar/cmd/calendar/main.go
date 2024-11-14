@@ -10,14 +10,13 @@ import (
 	"time"
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/cmd/db_migration"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/db"
-	"github.com/jackc/pgx/v5/pgxpool"
-
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 	config2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/db"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/http"
 	memorystorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage/sql"
 )
 
 var (
@@ -72,24 +71,24 @@ func main() {
 		storage = memorystorage.New()
 		logg.Info("Memory storage initialized")
 	case "sql":
-		//storage = sqlstorage.New()
-		storage = memorystorage.New()
+		pgxPool, err := db.Connect(ctx, config.Database, logg)
+		defer func() {
+			if pgxPool != nil {
+				db.Close(pgxPool)
+			}
+		}()
+		if err != nil {
+			logg.Error(fmt.Sprintf("failed to create connetion to dictionaries db: %s", err))
+		}
+		storage = sqlstorage.New(pgxPool)
 		logg.Info("SQL storage initialized")
 	default:
 		logg.Error("Invalid storage type: " + config.App.Storage)
 		os.Exit(1)
 	}
 
-	var pgxPool *pgxpool.Pool
-
-	if config.App.Storage == "sql" {
-		pgxPool, err = db.InitPgxConnection(ctx, config.Database, logg)
-		if err != nil {
-			logg.Error(fmt.Sprintf("failed to create connetion to dictionaries db: %s", err))
-		}
-	}
 	// Application
-	calendar := app.New(logg, storage, pgxPool)
+	calendar := app.New(logg, storage)
 	logg.Info("App initialized")
 
 	// HTTP server

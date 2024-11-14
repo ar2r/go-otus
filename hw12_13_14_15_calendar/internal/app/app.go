@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage"
@@ -28,11 +29,10 @@ type Storage interface {
 	List(ctx context.Context) ([]storage.Event, error)
 }
 
-func New(logger Logger, storage Storage, pgxPool *pgxpool.Pool) *App {
+func New(logger Logger, storage Storage) *App {
 	return &App{
 		Logger:  logger,
 		Storage: storage,
-		PgxPool: pgxPool,
 	}
 }
 

@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func InitPgxConnection(ctx context.Context, cfg config.DatabaseConf, _ *logger.Logger) (*pgxpool.Pool, error) {
+func Connect(ctx context.Context, cfg config.DatabaseConf, _ *logger.Logger) (*pgxpool.Pool, error) {
 	connectionString := fmt.Sprintf(
 		"postgres://%s:%s@%s/%s?sslmode=%s&TimeZone=%s&target_session_attrs=%s",
 		cfg.Username,
@@ -49,4 +49,8 @@ func InitPgxConnection(ctx context.Context, cfg config.DatabaseConf, _ *logger.L
 	}
 
 	return db, nil
+}
+
+func Close(db *pgxpool.Pool) {
+	db.Close()
 }
