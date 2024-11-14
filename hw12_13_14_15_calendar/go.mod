@@ -2,8 +2,6 @@ module github.com/ar2r/go-otus/hw12_13_14_15_calendar
 
 go 1.22.0
 
-toolchain go1.23.3
-
 require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/golang-migrate/migrate/v4 v4.18.1
