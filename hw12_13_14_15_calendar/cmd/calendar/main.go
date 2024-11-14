@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/cmd/db_migration"
 	"os"
 	"os/signal"
 	"syscall"
@@ -49,6 +50,14 @@ func main() {
 
 	if config.App.Debug {
 		logg.Report()
+	}
+
+	if flag.Arg(0) == "migrate" {
+		err = db_migration.Run(logg, config.Database, true)
+		if err != nil {
+			logg.Error(fmt.Sprintf("%v", err))
+		}
+		return
 	}
 
 	var storage app.Storage

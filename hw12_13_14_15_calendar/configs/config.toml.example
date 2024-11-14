@@ -13,9 +13,12 @@ channel = "stdout" # stdout | stderr | file
 # file = "logs/calendar.log"
 
 [database]
-host = "postgres"
+host = "localhost"
 port = 5432
 database = "calendar"
 username = "calendar"
 password = "calendar-pwd"
 schema = "public"
+ssl_mode = "disable"
+timezone = "Europe/Moscow"
+target_session_attr = "read-write"
