@@ -31,14 +31,14 @@ func Run(logg Logger, conf config.DatabaseConf, rerun bool) error {
 	logg.Info("Loading migrations...")
 	m, err := migrate.New("file://migrations", dsn)
 	if err != nil {
-		return fmt.Errorf("db_migration: error while create connection: %s", err)
+		return fmt.Errorf("db_migration: error while create connection: %w", err)
 	}
 
-	if rerun == true {
+	if rerun {
 		logg.Info("Rollback migrations...")
 		if err = m.Down(); err != nil {
 			if !errors.Is(err, migrate.ErrNoChange) {
-				return fmt.Errorf("db_migration: %s", err)
+				return fmt.Errorf("db_migration: %w", err)
 			}
 			logg.Info(fmt.Sprintf("db_migration: %s", err))
 		}
@@ -47,7 +47,7 @@ func Run(logg Logger, conf config.DatabaseConf, rerun bool) error {
 	logg.Info("Run migrations...")
 	if err = m.Up(); err != nil {
 		if !errors.Is(err, migrate.ErrNoChange) {
-			return fmt.Errorf("db_migration: %s", err)
+			return fmt.Errorf("db_migration: %w", err)
 		}
 		logg.Info(fmt.Sprintf("db_migration: %s", err))
 	}
@@ -55,10 +55,10 @@ func Run(logg Logger, conf config.DatabaseConf, rerun bool) error {
 	logg.Info("Closing database connection...")
 	s, e := m.Close()
 	if s != nil {
-		return fmt.Errorf("error while closing migration: %s", e)
+		return fmt.Errorf("error while closing migration: %w", e)
 	}
 	if e != nil {
-		return fmt.Errorf("error while closing migration: %s", e)
+		return fmt.Errorf("error while closing migration: %w", e)
 	}
 	return nil
 }

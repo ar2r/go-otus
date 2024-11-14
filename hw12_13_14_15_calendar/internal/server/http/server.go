@@ -28,7 +28,9 @@ func NewServer(logg Logger, app Application, conf config.ServerConf) *Server {
 		logg: logg,
 		app:  app,
 		httpServer: &http.Server{
-			Addr: fmt.Sprintf("%s:%d", conf.Host, conf.Port),
+			Addr:        fmt.Sprintf("%s:%d", conf.Host, conf.Port),
+			ReadTimeout: 10 * time.Second,
+			IdleTimeout: 10 * time.Second,
 		},
 	}
 }
@@ -36,7 +38,7 @@ func NewServer(logg Logger, app Application, conf config.ServerConf) *Server {
 func (s *Server) Start(ctx context.Context) error {
 	s.logg.Info("Starting HTTP server...")
 
-	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/hello", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte("Hello, world!"))
 	})
 

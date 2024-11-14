@@ -45,7 +45,7 @@ func Connect(ctx context.Context, cfg config.DatabaseConf, _ *logger.Logger) (*p
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	if err = db.Ping(ctx); err != nil {
-		return nil, fmt.Errorf("failed to ping PGX pool: %s", err)
+		return nil, fmt.Errorf("failed to ping PGX pool: %w", err)
 	}
 
 	return db, nil

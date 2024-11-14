@@ -21,12 +21,22 @@ func New(pgxPool *pgxpool.Pool) *Storage {
 
 // CreateEvent Создать событие с проверками на возможные пересечения с другими событиями.
 func (s *Storage) CreateEvent(ctx context.Context, id uuid.UUID, title string) error {
-	return storage.ErrNotImplemented
+	event := storage.Event{
+		Id:          id,
+		Title:       title,
+		Description: "",
+		StartDt:     time.Time{},
+		EndDt:       time.Time{},
+		UserId:      uuid.Nil,
+	}
+
+	_, err := s.Add(ctx, event)
+	return err
 }
 
 // Get Вернуть событие по идентификатору.
-func (s *Storage) Get(_ context.Context, id uuid.UUID) (*storage.Event, error) {
-	row := s.PgxPool.QueryRow(context.Background(), "SELECT * FROM events WHERE id = $1", id)
+func (s *Storage) Get(ctx context.Context, id uuid.UUID) (*storage.Event, error) {
+	row := s.PgxPool.QueryRow(ctx, "SELECT * FROM events WHERE id = $1", id)
 
 	var event storage.Event
 	err := row.Scan(
@@ -67,8 +77,8 @@ func (s *Storage) Update(ctx context.Context, event storage.Event) (*storage.Eve
 }
 
 // Delete Удалить событие.
-func (s *Storage) Delete(_ context.Context, uuid uuid.UUID) error {
-	_, err := s.PgxPool.Exec(context.Background(), "DELETE FROM events WHERE id = $1", uuid)
+func (s *Storage) Delete(ctx context.Context, uuid uuid.UUID) error {
+	_, err := s.PgxPool.Exec(ctx, "DELETE FROM events WHERE id = $1", uuid)
 	if err != nil {
 		return err
 	}
@@ -76,8 +86,8 @@ func (s *Storage) Delete(_ context.Context, uuid uuid.UUID) error {
 }
 
 // List Вернуть все события.
-func (s *Storage) List(_ context.Context) ([]storage.Event, error) {
-	rows, err := s.PgxPool.Query(context.Background(), "SELECT * FROM events")
+func (s *Storage) List(ctx context.Context) ([]storage.Event, error) {
+	rows, err := s.PgxPool.Query(ctx, "SELECT * FROM events")
 	if err != nil {
 		return nil, err
 	}
@@ -104,23 +114,23 @@ func (s *Storage) List(_ context.Context) ([]storage.Event, error) {
 }
 
 // ListByDate Найти все события, которые происходят в указанный день.
-func (s *Storage) ListByDate(_ context.Context, start time.Time) ([]storage.Event, error) {
+func (s *Storage) ListByDate(_ context.Context, _ time.Time) ([]storage.Event, error) {
 	return nil, storage.ErrNotImplemented
 }
 
 // ListByPeriod Найти события, которые пересекается с указанным временным промежутком.
-func (s *Storage) ListByPeriod(_ context.Context, startDt time.Time, endDt time.Time) ([]storage.Event, error) {
+func (s *Storage) ListByPeriod(_ context.Context, _ time.Time, _ time.Time) ([]storage.Event, error) {
 	return nil, storage.ErrNotImplemented
 }
 
 // ListByWeek Найти все события, которые происходят в указанной неделе.
 // Неделя начинается с понедельника.
-func (s *Storage) ListByWeek(ctx context.Context, startDt time.Time) ([]storage.Event, error) {
+func (s *Storage) ListByWeek(_ context.Context, _ time.Time) ([]storage.Event, error) {
 	return nil, storage.ErrNotImplemented
 }
 
 // ListByMonth Найти все события, которые происходят в указанном месяце.
 // Месяц начинается с первого числа.
-func (s *Storage) ListByMonth(ctx context.Context, startDt time.Time) ([]storage.Event, error) {
+func (s *Storage) ListByMonth(_ context.Context, _ time.Time) ([]storage.Event, error) {
 	return nil, storage.ErrNotImplemented
 }

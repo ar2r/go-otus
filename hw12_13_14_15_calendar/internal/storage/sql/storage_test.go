@@ -15,6 +15,7 @@ import (
 )
 
 func setupTestDB(t *testing.T) *pgxpool.Pool {
+	t.Helper()
 	ctx := context.Background()
 	conf := config.DatabaseConf{
 		Username:          "calendar",

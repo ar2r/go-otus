@@ -23,8 +23,8 @@ func (s *Storage) CreateEvent(ctx context.Context, id uuid.UUID, title string) e
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	userId := ctx.Value(storage.CtxKeyUserID).(uuid.UUID)
-	if userId == uuid.Nil {
+	userID := ctx.Value(storage.CtxKeyUserID).(uuid.UUID)
+	if userID == uuid.Nil {
 		return storage.ErrNoUserID
 	}
 
@@ -33,7 +33,7 @@ func (s *Storage) CreateEvent(ctx context.Context, id uuid.UUID, title string) e
 		Title:   title,
 		StartDt: time.Now(),
 		EndDt:   time.Now().Add(time.Hour),
-		UserId:  userId,
+		UserId:  userID,
 	}
 
 	foundEvents, err := s.ListByPeriod(ctx, event.StartDt, event.EndDt)
@@ -85,7 +85,7 @@ func (s *Storage) Delete(_ context.Context, uuid uuid.UUID) error {
 // List Вернуть все события.
 func (s *Storage) List(_ context.Context) ([]storage.Event, error) {
 	foundItems := make([]storage.Event, 0)
-	s.items.Range(func(key, value any) bool {
+	s.items.Range(func(_, value any) bool {
 		foundItems = append(foundItems, value.(storage.Event))
 		return true
 	})
@@ -99,7 +99,7 @@ func (s *Storage) ListByDate(_ context.Context, start time.Time) ([]storage.Even
 	endOfDay := time.Date(start.Year(), start.Month(), start.Day()+1, 0, 0, 0, 0, time.Local)
 
 	foundItems := make([]storage.Event, 0)
-	s.items.Range(func(key, value any) bool {
+	s.items.Range(func(_, value any) bool {
 		v := value.(storage.Event)
 		if v.StartDt.Before(endOfDay) && v.EndDt.After(startOfDay) {
 			foundItems = append(foundItems, v)
@@ -115,7 +115,7 @@ func (s *Storage) ListByPeriod(_ context.Context, startDt time.Time, endDt time.
 	endDt = endDt.Add(1 * time.Nanosecond)
 
 	foundItems := make([]storage.Event, 0)
-	s.items.Range(func(key, value any) bool {
+	s.items.Range(func(_, value any) bool {
 		v := value.(storage.Event)
 		if v.StartDt.Before(endDt) && v.EndDt.After(startDt) {
 			foundItems = append(foundItems, v)

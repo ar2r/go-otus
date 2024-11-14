@@ -23,6 +23,7 @@ type Logger interface {
 }
 
 type Storage interface {
+	CreateEvent(ctx context.Context, id uuid.UUID, title string) error
 	Add(ctx context.Context, event storage.Event) (*storage.Event, error)
 	Update(ctx context.Context, event storage.Event) (*storage.Event, error)
 	Delete(ctx context.Context, id uuid.UUID) error
@@ -36,7 +37,6 @@ func New(logger Logger, storage Storage) *App {
 	}
 }
 
-func (a *App) CreateEvent(ctx context.Context, id, title string) error {
-	//return a.Storage.CreateEvent(ctx, id, title)
-	return storage.ErrNotImplemented
+func (a *App) CreateEvent(ctx context.Context, id uuid.UUID, title string) error {
+	return a.Storage.CreateEvent(ctx, id, title)
 }

@@ -6,6 +6,11 @@ import (
 	"os"
 )
 
+const DEBUG = "debug"
+const INFO = "info"
+const WARN = "warn"
+const ERROR = "error"
+
 type Logger struct {
 	level    string
 	channel  string
@@ -47,25 +52,25 @@ func (l *Logger) Report() {
 }
 
 func (l *Logger) Debug(msg string) {
-	if l.level == "debug" {
+	if l.level == DEBUG {
 		l.logger.Println("⚙️ DEBUG: " + msg)
 	}
 }
 
 func (l *Logger) Info(msg string) {
-	if l.level == "debug" || l.level == "info" {
+	if l.level == DEBUG || l.level == INFO {
 		l.logger.Println("🔵 INFO: " + msg)
 	}
 }
 
 func (l *Logger) Warn(msg string) {
-	if l.level == "debug" || l.level == "info" || l.level == "warn" {
+	if l.level == DEBUG || l.level == INFO || l.level == WARN {
 		l.logger.Println("🟡 WARN: " + msg)
 	}
 }
 
 func (l *Logger) Error(msg string) {
-	if l.level == "debug" || l.level == "info" || l.level == "warn" || l.level == "error" {
+	if l.level == DEBUG || l.level == INFO || l.level == WARN || l.level == ERROR {
 		l.logger.Println("🔴 ERROR: " + msg)
 	}
 }

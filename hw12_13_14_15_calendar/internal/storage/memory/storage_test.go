@@ -25,7 +25,6 @@ func equal(a, b []storage.Event) bool {
 }
 
 func TestStorage(t *testing.T) {
-
 	event := createStubEvent("event 1", time.Time{}, time.Time{})
 
 	tests := []struct {
@@ -60,7 +59,6 @@ func TestStorage(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			memStorage := New()
 			err := tt.operation(memStorage)
@@ -134,7 +132,6 @@ func TestUpdate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.operation()
 			if err != nil && !errors.Is(err, storage.ErrNotFound) {
@@ -176,7 +173,6 @@ func TestListByDate(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, _ := memStorage.ListByDate(ctx, tt.date)
 			if !equal(got, tt.expected) {
@@ -224,7 +220,6 @@ func TestListByPeriod(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, _ := memStorage.ListByPeriod(ctx, tt.startDt, tt.endDt)
 			if !equal(got, tt.expected) {
@@ -261,7 +256,6 @@ func TestListByWeek(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, _ := memStorage.ListByWeek(ctx, tt.date)
 			if !equal(got, tt.expected) {
@@ -298,7 +292,6 @@ func TestListByMonth(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			got, _ := memStorage.ListByMonth(ctx, tt.date)
 			if !equal(got, tt.expected) {
@@ -309,8 +302,8 @@ func TestListByMonth(t *testing.T) {
 }
 
 func createStubEvent(name string, startDt time.Time, endDt time.Time) storage.Event {
-	eventId, _ := uuid.NewV7()
-	userId, _ := uuid.NewV7()
+	eventID, _ := uuid.NewV7()
+	userID, _ := uuid.NewV7()
 	if startDt.IsZero() {
 		startDt = time.Date(2023, 10, 1, 12, 0, 0, 0, time.UTC)
 	}
@@ -318,12 +311,12 @@ func createStubEvent(name string, startDt time.Time, endDt time.Time) storage.Ev
 		endDt = startDt.Add(time.Hour)
 	}
 	return storage.Event{
-		Id:          eventId,
+		Id:          eventID,
 		Title:       name,
 		StartDt:     startDt,
 		EndDt:       endDt,
 		Description: "description",
-		UserId:      userId,
+		UserId:      userID,
 		Notify:      time.Second,
 	}
 }

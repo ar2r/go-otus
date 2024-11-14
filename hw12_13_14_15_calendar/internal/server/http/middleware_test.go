@@ -1,6 +1,7 @@
 package internalhttp
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -21,14 +22,14 @@ func (m *MockLogger) Error(msg string) {
 
 func TestLoggingMiddleware(t *testing.T) {
 	logg := &MockLogger{}
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Hello, world!"))
 	})
 
 	wrappedHandler := loggingMiddleware(handler, logg)
 
-	req, err := http.NewRequest("GET", "/hello?q=1", nil)
+	req, err := http.NewRequestWithContext(context.Background(), "GET", "/hello?q=1", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
