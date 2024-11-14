@@ -11,7 +11,7 @@ import (
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/cmd/db_migration"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
-	config2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/db"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/http"
@@ -29,6 +29,8 @@ func init() {
 }
 
 func main() {
+	var storage app.Storage
+
 	ctx := context.Background()
 	flag.Parse()
 
@@ -37,41 +39,26 @@ func main() {
 		return
 	}
 
-	// Обработка конфига
-	config, err := config2.LoadConfig(configFile)
+	myConfig, err := InitLogger()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to load config: %v\n", err)
+		fmt.Fprintf(os.Stderr, "failed to init logger: %v\n", err)
 		os.Exit(1)
 	}
 
-	// Logger
-	logg = logger.New(
-		config.Logger.Level,
-		config.Logger.Channel,
-		config.Logger.Filename,
-	)
-
-	if config.App.Debug {
-		logg.Report()
-	}
-
 	if flag.Arg(0) == "migrate" {
-		err = db_migration.Run(logg, config.Database, true)
-		if err != nil {
+		if err := db_migration.Run(logg, myConfig.Database, true); err != nil {
 			logg.Error(fmt.Sprintf("%v", err))
 		}
 		return
 	}
 
-	var storage app.Storage
-
 	// Storage
-	switch config.App.Storage {
+	switch myConfig.App.Storage {
 	case "memory":
 		storage = memorystorage.New()
 		logg.Info("Memory storage initialized")
 	case "sql":
-		pgxPool, err := db.Connect(ctx, config.Database, logg)
+		pgxPool, err := db.Connect(ctx, myConfig.Database, logg)
 		defer func() {
 			if pgxPool != nil {
 				db.Close(pgxPool)
@@ -83,7 +70,7 @@ func main() {
 		storage = sqlstorage.New(pgxPool)
 		logg.Info("SQL storage initialized")
 	default:
-		logg.Error("Invalid storage type: " + config.App.Storage)
+		logg.Error("Invalid storage type: " + myConfig.App.Storage)
 		os.Exit(1)
 	}
 
@@ -92,7 +79,7 @@ func main() {
 	logg.Info("App initialized")
 
 	// HTTP server
-	server := internalhttp.NewServer(logg, calendar, config.Server)
+	server := internalhttp.NewServer(logg, calendar, myConfig.Server)
 	logg.Info("HTTP server initialized")
 
 	// Signal handler
@@ -120,4 +107,23 @@ func main() {
 		cancel()
 		os.Exit(1) //nolint:gocritic
 	}
+}
+
+func InitLogger() (*config.Config, error) {
+	// Обработка конфига
+	conf, err := config.LoadConfig(configFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
+	}
+
+	logg = logger.New(
+		conf.Logger.Level,
+		conf.Logger.Channel,
+		conf.Logger.Filename,
+	)
+
+	if conf.App.Debug {
+		logg.Report()
+	}
+	return conf, err
 }

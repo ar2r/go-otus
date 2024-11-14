@@ -3,6 +3,7 @@ package db_migration
 import (
 	"errors"
 	"fmt"
+
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/pgx"
