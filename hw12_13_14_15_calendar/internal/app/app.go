@@ -15,6 +15,7 @@ type App struct {
 type Logger interface {
 	Debug(msg string)
 	Info(msg string)
+	InfoRaw(msg string)
 	Warn(msg string)
 	Error(msg string)
 }
