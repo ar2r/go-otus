@@ -6,13 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model/event"
 	"github.com/google/uuid"
 )
 
 var ctx = context.Background()
 
-func equal(a, b []storage.Event) bool {
+func equal(a, b []event.Event) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -25,36 +26,36 @@ func equal(a, b []storage.Event) bool {
 }
 
 func TestStorage(t *testing.T) {
-	event := createStubEvent("event 1", time.Time{}, time.Time{})
+	e := createStubEvent("event 1", time.Time{}, time.Time{})
 
 	tests := []struct {
 		name      string
 		operation func(s *Storage) error
-		expected  []storage.Event
+		expected  []event.Event
 	}{
 		{
-			name: "Add item",
+			name: "Add event",
 			operation: func(s *Storage) error {
-				s.Add(ctx, event)
+				s.Add(ctx, e)
 				return nil
 			},
-			expected: []storage.Event{event},
+			expected: []event.Event{e},
 		},
 		{
-			name: "Delete item",
+			name: "Delete event",
 			operation: func(s *Storage) error {
-				s.Add(ctx, event)
-				return s.Delete(ctx, event.ID)
+				s.Add(ctx, e)
+				return s.Delete(ctx, e.ID)
 			},
-			expected: []storage.Event{},
+			expected: []event.Event{},
 		},
 		{
-			name: "Delete non-existent item",
+			name: "Delete non-existent event",
 			operation: func(s *Storage) error {
 				id, _ := uuid.NewV7()
 				return s.Delete(ctx, id)
 			},
-			expected: []storage.Event{},
+			expected: []event.Event{},
 		},
 	}
 
@@ -62,7 +63,7 @@ func TestStorage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			memStorage := New()
 			err := tt.operation(memStorage)
-			if err != nil && !errors.Is(err, storage.ErrNotFound) {
+			if err != nil && !errors.Is(err, adapters.ErrNotFound) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			if got, _ := memStorage.List(ctx); !equal(got, tt.expected) {
@@ -74,11 +75,11 @@ func TestStorage(t *testing.T) {
 
 func TestUpdateEvent(t *testing.T) {
 	memStorage := New()
-	event := createStubEvent("event 1", time.Time{}, time.Time{})
-	memStorage.Add(ctx, event)
+	e := createStubEvent("event 1", time.Time{}, time.Time{})
+	memStorage.Add(ctx, e)
 
-	event.Title = "item2"
-	_, err := memStorage.Update(ctx, event)
+	e.Title = "event 2"
+	_, err := memStorage.Update(ctx, e)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -86,10 +87,10 @@ func TestUpdateEvent(t *testing.T) {
 
 func TestUpdateNotExistentEvent(t *testing.T) {
 	memStorage := New()
-	event := createStubEvent("item 1", time.Time{}, time.Time{})
-	_, err := memStorage.Update(ctx, event)
-	if !errors.Is(err, storage.ErrNotFound) {
-		t.Errorf("expected error %v, got %v", storage.ErrNotFound, err)
+	e := createStubEvent("event 1", time.Time{}, time.Time{})
+	_, err := memStorage.Update(ctx, e)
+	if !errors.Is(err, adapters.ErrNotFound) {
+		t.Errorf("expected error %v, got %v", adapters.ErrNotFound, err)
 	}
 }
 
@@ -99,25 +100,25 @@ func TestUpdate(t *testing.T) {
 	start := time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)
 	// 2000-01-01 14:00:00 +0000 UTC
 	end := start.Add(2 * time.Hour)
-	event1 := createStubEvent("event 1", start, end)
+	e1 := createStubEvent("event 1", start, end)
 
-	event2 := event1
-	event2.Title = "event 2"
+	e2 := e1
+	e2.Title = "event 2"
 
 	tests := []struct {
 		name      string
 		operation func() error
-		expected  []storage.Event
+		expected  []event.Event
 	}{
 		{
 			name: "Update item",
 			operation: func() error {
 				memStorage = New()
-				memStorage.Add(ctx, event1)
-				_, err := memStorage.Update(ctx, event2)
+				memStorage.Add(ctx, e1)
+				_, err := memStorage.Update(ctx, e2)
 				return err
 			},
-			expected: []storage.Event{event2},
+			expected: []event.Event{e2},
 		},
 		{
 			name: "Update non-existent item",
@@ -127,14 +128,14 @@ func TestUpdate(t *testing.T) {
 				_, err := memStorage.Update(ctx, event)
 				return err
 			},
-			expected: []storage.Event{},
+			expected: []event.Event{},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.operation()
-			if err != nil && !errors.Is(err, storage.ErrNotFound) {
+			if err != nil && !errors.Is(err, adapters.ErrNotFound) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			if got, _ := memStorage.List(ctx); !equal(got, tt.expected) {
@@ -152,23 +153,23 @@ func TestListByDate(t *testing.T) {
 	// 2000-01-01 14:00:00 +0000 UTC
 	end := start.Add(2 * time.Hour)
 
-	event1 := createStubEvent("event 1", start, end)
-	memStorage.Add(ctx, event1)
+	e1 := createStubEvent("event 1", start, end)
+	memStorage.Add(ctx, e1)
 
 	tests := []struct {
 		name     string
 		date     time.Time
-		expected []storage.Event
+		expected []event.Event
 	}{
 		{
 			name:     "List existing event",
 			date:     start,
-			expected: []storage.Event{event1},
+			expected: []event.Event{e1},
 		},
 		{
 			name:     "List non-existing event",
 			date:     start.Add(24 * time.Hour),
-			expected: []storage.Event{},
+			expected: []event.Event{},
 		},
 	}
 
@@ -189,33 +190,33 @@ func TestListByPeriod(t *testing.T) {
 	// 2000-01-01 14:00:00 +0000 UTC
 	end := start.Add(2 * time.Hour)
 
-	event := createStubEvent("event 1", start, end)
+	e := createStubEvent("event 1", start, end)
 
-	memStorage.Add(ctx, event)
+	memStorage.Add(ctx, e)
 
 	tests := []struct {
 		name     string
 		startDt  time.Time
 		endDt    time.Time
-		expected []storage.Event
+		expected []event.Event
 	}{
 		{
 			name:     "List overlapping event",
 			startDt:  start.Add(-1 * time.Hour),
 			endDt:    start.Add(1 * time.Hour),
-			expected: []storage.Event{event},
+			expected: []event.Event{e},
 		},
 		{
 			name:     "List non-overlapping event",
 			startDt:  start.Add(3 * time.Hour),
 			endDt:    start.Add(4 * time.Hour),
-			expected: []storage.Event{},
+			expected: []event.Event{},
 		},
 		{
 			name:     "List event within range",
 			startDt:  start,
 			endDt:    end,
-			expected: []storage.Event{event},
+			expected: []event.Event{e},
 		},
 	}
 
@@ -235,23 +236,23 @@ func TestListByWeek(t *testing.T) {
 	start := time.Date(2023, 10, 2, 12, 0, 0, 0, time.UTC)
 	// 2023-10-02 14:00:00 +0000 UTC
 	end := start.Add(2 * time.Hour)
-	event := createStubEvent("event 1", start, end)
-	memStorage.Add(ctx, event)
+	e := createStubEvent("event 1", start, end)
+	memStorage.Add(ctx, e)
 
 	tests := []struct {
 		name     string
 		date     time.Time
-		expected []storage.Event
+		expected []event.Event
 	}{
 		{
 			name:     "List events in the same week",
 			date:     start,
-			expected: []storage.Event{event},
+			expected: []event.Event{e},
 		},
 		{
 			name:     "List events in a different week",
 			date:     start.AddDate(0, 0, 7),
-			expected: []storage.Event{},
+			expected: []event.Event{},
 		},
 	}
 
@@ -271,23 +272,23 @@ func TestListByMonth(t *testing.T) {
 	start := time.Date(2023, 10, 1, 12, 0, 0, 0, time.UTC)
 	// 2023-10-01 14:00:00 +0000 UTC
 	end := start.Add(2 * time.Hour)
-	event := createStubEvent("event 1", start, end)
-	memStorage.Add(ctx, event)
+	e := createStubEvent("event 1", start, end)
+	memStorage.Add(ctx, e)
 
 	tests := []struct {
 		name     string
 		date     time.Time
-		expected []storage.Event
+		expected []event.Event
 	}{
 		{
 			name:     "List event in the same month",
 			date:     start,
-			expected: []storage.Event{event},
+			expected: []event.Event{e},
 		},
 		{
 			name:     "List event in a different month",
 			date:     start.AddDate(0, 1, 0),
-			expected: []storage.Event{},
+			expected: []event.Event{},
 		},
 	}
 
@@ -301,7 +302,7 @@ func TestListByMonth(t *testing.T) {
 	}
 }
 
-func createStubEvent(name string, startDt time.Time, endDt time.Time) storage.Event {
+func createStubEvent(name string, startDt time.Time, endDt time.Time) event.Event {
 	eventID, _ := uuid.NewV7()
 	userID, _ := uuid.NewV7()
 	if startDt.IsZero() {
@@ -310,7 +311,7 @@ func createStubEvent(name string, startDt time.Time, endDt time.Time) storage.Ev
 	if endDt.IsZero() {
 		endDt = startDt.Add(time.Hour)
 	}
-	return storage.Event{
+	return event.Event{
 		ID:          eventID,
 		Title:       name,
 		StartDt:     startDt,

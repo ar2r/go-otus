@@ -9,14 +9,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/cmd/migration"
+	memorystorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters/memory"
+	sqlstorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters/pgx"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/db"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/logger"
 	internalhttp "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/http"
-	memorystorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage/memory"
-	sqlstorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage/sql"
 )
 
 var (
@@ -25,7 +24,12 @@ var (
 )
 
 func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
+	flag.StringVar(
+		&configFile,
+		"config",
+		"/etc/calendar/config.toml.example",
+		"Path to configuration file",
+	)
 }
 
 func main() {
@@ -35,7 +39,7 @@ func main() {
 	flag.Parse()
 
 	if flag.Arg(0) == "version" {
-		printVersion()
+		VersionPrint()
 		return
 	}
 
@@ -46,18 +50,18 @@ func main() {
 	}
 
 	if flag.Arg(0) == "migrate" {
-		if err := migration.Run(logg, myConfig.Database, true); err != nil {
+		if err := MigrateRun(logg, myConfig.Database, true); err != nil {
 			logg.Error(fmt.Sprintf("%v", err))
 		}
 		return
 	}
 
-	// Storage
+	// UserRepository
 	switch myConfig.App.Storage {
 	case "memory":
 		storage = memorystorage.New()
-		logg.Info("Memory storage initialized")
-	case "sql":
+		logg.Info("Memory adapters initialized")
+	case "pgx":
 		pgxPool, err := db.Connect(ctx, myConfig.Database, logg)
 		defer func() {
 			if pgxPool != nil {
@@ -68,9 +72,9 @@ func main() {
 			logg.Error(fmt.Sprintf("failed to create connetion to dictionaries db: %s", err))
 		}
 		storage = sqlstorage.New(pgxPool)
-		logg.Info("SQL storage initialized")
+		logg.Info("SQL adapters initialized")
 	default:
-		logg.Error("Invalid storage type: " + myConfig.App.Storage)
+		logg.Error("Invalid adapters type: " + myConfig.App.Storage)
 		return
 	}
 

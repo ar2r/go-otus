@@ -1,4 +1,4 @@
-package migration
+package main
 
 import (
 	"errors"
@@ -17,7 +17,7 @@ type Logger interface {
 	Error(msg string)
 }
 
-func Run(logg Logger, conf config.DatabaseConf, rerun bool) error {
+func MigrateRun(logg Logger, conf config.DatabaseConf, rerun bool) error {
 	logg.Info("Connecting to database...")
 	dsn := fmt.Sprintf(
 		"pgx://%s:%s@%s/%s?sslmode=%s&TimeZone=%s&target_session_attrs=%s",

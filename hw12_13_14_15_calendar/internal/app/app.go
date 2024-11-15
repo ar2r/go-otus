@@ -3,15 +3,15 @@ package app
 import (
 	"context"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model/event"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type App struct {
-	Logger  Logger
-	Storage Storage
-	PgxPool *pgxpool.Pool
+	Logger         Logger
+	UserRepository Storage
+	PgxPool        *pgxpool.Pool
 }
 
 type Logger interface {
@@ -23,19 +23,19 @@ type Logger interface {
 
 type Storage interface {
 	CreateEvent(ctx context.Context, id uuid.UUID, title string) error
-	Add(ctx context.Context, event storage.Event) (*storage.Event, error)
-	Update(ctx context.Context, event storage.Event) (*storage.Event, error)
+	Add(ctx context.Context, event event.Event) (*event.Event, error)
+	Update(ctx context.Context, event event.Event) (*event.Event, error)
 	Delete(ctx context.Context, id uuid.UUID) error
-	List(ctx context.Context) ([]storage.Event, error)
+	List(ctx context.Context) ([]event.Event, error)
 }
 
 func New(logger Logger, storage Storage) *App {
 	return &App{
-		Logger:  logger,
-		Storage: storage,
+		Logger:         logger,
+		UserRepository: storage,
 	}
 }
 
 func (a *App) CreateEvent(ctx context.Context, id uuid.UUID, title string) error {
-	return a.Storage.CreateEvent(ctx, id, title)
+	return a.UserRepository.CreateEvent(ctx, id, title)
 }
