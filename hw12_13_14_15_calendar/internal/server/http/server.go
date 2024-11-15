@@ -16,6 +16,7 @@ type Server struct {
 }
 
 type Logger interface {
+	InfoRaw(msg string)
 	Info(msg string)
 	Error(msg string)
 }
@@ -38,9 +39,14 @@ func NewServer(logg Logger, app Application, conf config.ServerConf) *Server {
 func (s *Server) Start(ctx context.Context) error {
 	s.logg.Info("Starting HTTP server...")
 
-	http.HandleFunc("/hello", func(w http.ResponseWriter, _ *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/hello", func(w http.ResponseWriter, _ *http.Request) {
 		w.Write([]byte("Hello, world!"))
 	})
+
+	loggedMux := loggingMiddleware(mux, s.logg)
+
+	s.httpServer.Handler = loggedMux
 
 	go func() {
 		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {

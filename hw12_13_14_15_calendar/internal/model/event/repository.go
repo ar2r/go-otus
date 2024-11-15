@@ -9,7 +9,7 @@ import (
 
 const CtxKeyUserID = "user_id"
 
-type Interface interface {
+type Repository interface {
 	CRUDer
 	Creator
 	Lister

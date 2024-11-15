@@ -23,7 +23,7 @@ func loggingMiddleware(next http.Handler, logg Logger) http.Handler {
 
 		logMsg := fmt.Sprintf("%s [%s] %s %s %s %d %d \"%s\"",
 			clientIP, timestamp, method, path, protocol, statusCode, responseSize, userAgent)
-		logg.Info(logMsg)
+		logg.InfoRaw(logMsg)
 	})
 }
 

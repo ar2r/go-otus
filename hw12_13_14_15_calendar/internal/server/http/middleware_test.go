@@ -12,6 +12,10 @@ type MockLogger struct {
 	logs []string
 }
 
+func (m *MockLogger) InfoRaw(msg string) {
+	m.logs = append(m.logs, msg)
+}
+
 func (m *MockLogger) Info(msg string) {
 	m.logs = append(m.logs, msg)
 }

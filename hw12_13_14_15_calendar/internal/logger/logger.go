@@ -42,7 +42,7 @@ func New(level string, channel string, filename string) *Logger {
 		level:    level,
 		channel:  channel,
 		filename: filename,
-		logger:   log.New(writer, "", log.LstdFlags),
+		logger:   log.New(writer, "", 0),
 	}
 }
 
@@ -74,5 +74,11 @@ func (l *Logger) Warn(msg string) {
 func (l *Logger) Error(msg string) {
 	if l.level == DEBUG || l.level == INFO || l.level == WARN || l.level == ERROR {
 		l.logger.Println("🔴 ERROR: " + msg)
+	}
+}
+
+func (l *Logger) InfoRaw(msg string) {
+	if l.level == DEBUG || l.level == INFO {
+		l.logger.Println(msg)
 	}
 }
