@@ -27,6 +27,6 @@ func New(logger Logger, repo event.Repository) *App {
 	}
 }
 
-func (a *App) CreateEvent(ctx context.Context, id uuid.UUID, title string) error {
-	return a.userRepository.CreateEvent(ctx, id, title)
+func (a *App) CreateEvent(ctx context.Context, userID, id uuid.UUID, title string) error {
+	return a.userRepository.CreateEvent(ctx, userID, id, title)
 }

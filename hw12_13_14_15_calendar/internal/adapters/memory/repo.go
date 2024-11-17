@@ -20,14 +20,9 @@ func New() *Storage {
 }
 
 // CreateEvent Создать событие с проверками на возможные пересечения с другими событиями.
-func (s *Storage) CreateEvent(ctx context.Context, id uuid.UUID, title string) error {
+func (s *Storage) CreateEvent(ctx context.Context, userID uuid.UUID, id uuid.UUID, title string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	userID := ctx.Value(event.CtxKeyUserID).(uuid.UUID)
-	if userID == uuid.Nil {
-		return adapters.ErrNoUserID
-	}
 
 	event := event.Event{
 		ID:      id,

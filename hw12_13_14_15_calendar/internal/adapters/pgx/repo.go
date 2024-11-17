@@ -43,14 +43,14 @@ func (s *Storage) Close() {
 }
 
 // CreateEvent Создать событие с проверками на возможные пересечения с другими событиями.
-func (s *Storage) CreateEvent(ctx context.Context, id uuid.UUID, title string) error {
+func (s *Storage) CreateEvent(ctx context.Context, userID, id uuid.UUID, title string) error {
 	event := event.Event{
 		ID:          id,
 		Title:       title,
 		Description: "",
 		StartDt:     time.Time{},
 		EndDt:       time.Time{},
-		UserID:      uuid.Nil,
+		UserID:      userID,
 	}
 
 	_, err := s.Add(ctx, event)

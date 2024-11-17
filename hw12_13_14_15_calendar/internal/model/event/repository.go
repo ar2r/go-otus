@@ -15,7 +15,7 @@ type Repository interface {
 	Lister
 }
 type Creator interface {
-	CreateEvent(ctx context.Context, id uuid.UUID, title string) error
+	CreateEvent(ctx context.Context, userID, id uuid.UUID, title string) error
 }
 
 type CRUDer interface {
