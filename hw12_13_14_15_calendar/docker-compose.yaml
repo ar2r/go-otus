@@ -1,0 +1,16 @@
+volumes:
+  postgres-data:
+    driver: local
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    environment:
+      POSTGRES_USER: calendar
+      POSTGRES_PASSWORD: calendar-pwd
+      POSTGRES_DB: calendar
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"

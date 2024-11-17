@@ -1,5 +1,5 @@
 # Собираем в гошке
-FROM golang:1.22 as build
+FROM golang:1.22 AS build
 
 ENV BIN_FILE /opt/calendar/calendar-app
 ENV CODE_DIR /go/src/
@@ -25,7 +25,7 @@ FROM alpine:3.9
 
 LABEL ORGANIZATION="OTUS Online Education"
 LABEL SERVICE="calendar"
-LABEL MAINTAINERS="student@otus.ru"
+LABEL MAINTAINERS="artur@hasanov.ru"
 
 ENV BIN_FILE "/opt/calendar/calendar-app"
 COPY --from=build ${BIN_FILE} ${BIN_FILE}

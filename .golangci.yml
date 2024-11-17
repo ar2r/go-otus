@@ -17,12 +17,19 @@ linters-settings:
         allow:
           - $gostd
           - github.com/google # all google packages
+          - github.com/ar2r/go-otus # my repo
+          - github.com/jackc/pgx
+          - github.com/golang-migrate/migrate
+          - github.com/BurntSushi/toml
       test:
         files:
           - "$test"
         allow:
           - $gostd
           - github.com/stretchr
+          - github.com/ar2r/go-otus # my repo
+          - github.com/jackc/pgx
+          - github.com/google/uuid
 
 issues:
   exclude-rules:
