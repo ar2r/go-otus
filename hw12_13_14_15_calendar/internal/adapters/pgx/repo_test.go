@@ -82,7 +82,7 @@ func TestStorage_Add(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Storage{
-				PgxPool: tt.fields.PgxPool,
+				pgxPool: tt.fields.PgxPool,
 			}
 			got, err := s.Add(tt.args.ctx, tt.args.event)
 			if (err != nil) != tt.wantErr {

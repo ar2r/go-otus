@@ -13,7 +13,6 @@ import (
 	sqlstorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters/pgx"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/db"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/logger"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model/event"
 	internalhttp "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/http"
@@ -63,16 +62,11 @@ func main() {
 		eventRepo = memorystorage.New()
 		logg.Info("Memory adapters initialized")
 	case "sql":
-		pgxPool, err := db.Connect(ctx, myConfig.Database, logg)
-		defer func() {
-			if pgxPool != nil {
-				db.Close(pgxPool)
-			}
-		}()
+		eventRepo, err = sqlstorage.New(ctx, myConfig.Database, logg)
 		if err != nil {
-			logg.Error(fmt.Sprintf("failed to create connetion to dictionaries db: %s", err))
+			logg.Error(fmt.Sprintf("failed to initialize SQL storage: %s", err))
+			return
 		}
-		eventRepo = sqlstorage.New(pgxPool)
 		logg.Info("SQL adapters initialized")
 	default:
 		logg.Error("Invalid adapters type: " + myConfig.App.Storage)
