@@ -41,10 +41,15 @@ func main() {
 		return
 	}
 
-	myConfig, err := InitLogger()
+	myConfig, err := config.LoadConfig(configFile)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to init logger: %v\n", err)
+		fmt.Fprintf(os.Stderr, "failed to load config: %v\n", err)
 		os.Exit(1)
+	}
+
+	logg = InitLogger(myConfig.Logger)
+	if myConfig.App.Debug {
+		logg.Report()
 	}
 
 	if flag.Arg(0) == "migrate" {
@@ -111,21 +116,10 @@ func main() {
 	}
 }
 
-func InitLogger() (*config.Config, error) {
-	// Обработка конфига
-	conf, err := config.LoadConfig(configFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err)
-	}
-
-	logg = logger.New(
-		conf.Logger.Level,
-		conf.Logger.Channel,
-		conf.Logger.Filename,
+func InitLogger(loggerConf config.LoggerConf) *logger.Logger {
+	return logger.New(
+		loggerConf.Level,
+		loggerConf.Channel,
+		loggerConf.Filename,
 	)
-
-	if conf.App.Debug {
-		logg.Report()
-	}
-	return conf, err
 }
