@@ -27,4 +27,6 @@ require (
 	golang.org/x/crypto v0.27.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.5.1 // indirect
+	google.golang.org/protobuf v1.35.2 // indirect
 )
