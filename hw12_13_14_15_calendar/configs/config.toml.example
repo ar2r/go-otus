@@ -3,9 +3,13 @@ env = "prod" # dev | prod
 debug = false
 storage = "memory" # memory | sql
 
-[server]
+[rest]
 host = ""
 port = 8080
+
+[grpc]
+host = ""
+port = 8090
 
 [logger]
 level = "debug" # debug | info | warn | error

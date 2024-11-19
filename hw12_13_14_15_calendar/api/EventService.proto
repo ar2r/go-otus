@@ -18,11 +18,12 @@ service EventService {
 
 message Event {
   string id = 1;
-  string title = 2;
-  string description = 3;
-  google.protobuf.Timestamp start_at = 4;
-  google.protobuf.Timestamp end_at = 5;
-  google.protobuf.Timestamp notify_at = 6;
+  string user_id = 2;
+  string title = 3;
+  string description = 4;
+  google.protobuf.Timestamp start_at = 5;
+  google.protobuf.Timestamp end_at = 6;
+  google.protobuf.Timestamp notify_at = 7;
 }
 
 // Request
