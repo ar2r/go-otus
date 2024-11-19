@@ -32,7 +32,6 @@ lint: install-lint-deps
 	golangci-lint run ./...
 
 generate:
-generate:
 	rm -rf ./internal/server/protobuf
 	mkdir -p ./internal/server/protobuf
 
