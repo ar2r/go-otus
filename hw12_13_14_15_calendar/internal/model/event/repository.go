@@ -10,11 +10,7 @@ import (
 
 type Repository interface {
 	CRUDer
-	Creator
 	Lister
-}
-type Creator interface {
-	CreateEvent(ctx context.Context, userID, id uuid.UUID, title string) error
 }
 
 type CRUDer interface {
