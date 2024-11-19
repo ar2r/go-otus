@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model/event"
 	"github.com/google/uuid"
 )
@@ -28,5 +29,14 @@ func New(logger Logger, repo event.Repository) *App {
 }
 
 func (a *App) CreateEvent(ctx context.Context, userID, id uuid.UUID, title string) error {
-	return a.userRepository.CreateEvent(ctx, userID, id, title)
+	ev := model.Event{
+		Title:  title,
+		UserID: userID,
+	}
+
+	if _, err := a.userRepository.Add(ctx, ev); err != nil {
+		return err
+	}
+
+	return nil
 }

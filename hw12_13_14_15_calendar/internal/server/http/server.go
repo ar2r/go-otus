@@ -24,7 +24,7 @@ type Logger interface {
 type Application interface { // TODO
 }
 
-func NewServer(logg Logger, app Application, conf config.ServerConf) *Server {
+func NewServer(logg Logger, app Application, conf config.RestServerConf) *Server {
 	return &Server{
 		logg: logg,
 		app:  app,

@@ -4,6 +4,7 @@ package pb;
 
 option go_package = "./;pb";
 
+import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
 service EventService {
@@ -11,19 +12,19 @@ service EventService {
   rpc Update(Event) returns (EventDataResponse);
   rpc Delete(DeleteEventRequest) returns (EmptyResponse);
 
-  rpc ListOnDate(ListByDateRequest) returns (ListResponse);
-  rpc ListOnWeek(ListByDateRequest) returns (ListResponse);
-  rpc ListOnMonth(ListByDateRequest) returns (ListResponse);
+  rpc ListByDate(ListByDateRequest) returns (ListResponse);
+  rpc ListByWeek(ListByDateRequest) returns (ListResponse);
+  rpc ListByMonth(ListByDateRequest) returns (ListResponse);
 }
 
 message Event {
   string id = 1;
   string user_id = 2;
   string title = 3;
-  string description = 4;
-  google.protobuf.Timestamp start_at = 5;
-  google.protobuf.Timestamp end_at = 6;
-  google.protobuf.Timestamp notify_at = 7;
+  optional string description = 4;
+  google.protobuf.Timestamp start_dt = 5;
+  google.protobuf.Timestamp end_dt = 6;
+  optional google.protobuf.Duration notify_at = 7;
 }
 
 // Request

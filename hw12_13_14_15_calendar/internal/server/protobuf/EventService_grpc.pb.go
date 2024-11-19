@@ -22,9 +22,9 @@ const (
 	EventService_Create_FullMethodName      = "/pb.EventService/Create"
 	EventService_Update_FullMethodName      = "/pb.EventService/Update"
 	EventService_Delete_FullMethodName      = "/pb.EventService/Delete"
-	EventService_ListOnDate_FullMethodName  = "/pb.EventService/ListOnDate"
-	EventService_ListOnWeek_FullMethodName  = "/pb.EventService/ListOnWeek"
-	EventService_ListOnMonth_FullMethodName = "/pb.EventService/ListOnMonth"
+	EventService_ListByDate_FullMethodName  = "/pb.EventService/ListByDate"
+	EventService_ListByWeek_FullMethodName  = "/pb.EventService/ListByWeek"
+	EventService_ListByMonth_FullMethodName = "/pb.EventService/ListByMonth"
 )
 
 // EventServiceClient is the client API for EventService service.
@@ -34,9 +34,9 @@ type EventServiceClient interface {
 	Create(ctx context.Context, in *Event, opts ...grpc.CallOption) (*EventDataResponse, error)
 	Update(ctx context.Context, in *Event, opts ...grpc.CallOption) (*EventDataResponse, error)
 	Delete(ctx context.Context, in *DeleteEventRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
-	ListOnDate(ctx context.Context, in *ListByDateRequest, opts ...grpc.CallOption) (*ListResponse, error)
-	ListOnWeek(ctx context.Context, in *ListByDateRequest, opts ...grpc.CallOption) (*ListResponse, error)
-	ListOnMonth(ctx context.Context, in *ListByDateRequest, opts ...grpc.CallOption) (*ListResponse, error)
+	ListByDate(ctx context.Context, in *ListByDateRequest, opts ...grpc.CallOption) (*ListResponse, error)
+	ListByWeek(ctx context.Context, in *ListByDateRequest, opts ...grpc.CallOption) (*ListResponse, error)
+	ListByMonth(ctx context.Context, in *ListByDateRequest, opts ...grpc.CallOption) (*ListResponse, error)
 }
 
 type eventServiceClient struct {
@@ -77,30 +77,30 @@ func (c *eventServiceClient) Delete(ctx context.Context, in *DeleteEventRequest,
 	return out, nil
 }
 
-func (c *eventServiceClient) ListOnDate(ctx context.Context, in *ListByDateRequest, opts ...grpc.CallOption) (*ListResponse, error) {
+func (c *eventServiceClient) ListByDate(ctx context.Context, in *ListByDateRequest, opts ...grpc.CallOption) (*ListResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListResponse)
-	err := c.cc.Invoke(ctx, EventService_ListOnDate_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, EventService_ListByDate_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *eventServiceClient) ListOnWeek(ctx context.Context, in *ListByDateRequest, opts ...grpc.CallOption) (*ListResponse, error) {
+func (c *eventServiceClient) ListByWeek(ctx context.Context, in *ListByDateRequest, opts ...grpc.CallOption) (*ListResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListResponse)
-	err := c.cc.Invoke(ctx, EventService_ListOnWeek_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, EventService_ListByWeek_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *eventServiceClient) ListOnMonth(ctx context.Context, in *ListByDateRequest, opts ...grpc.CallOption) (*ListResponse, error) {
+func (c *eventServiceClient) ListByMonth(ctx context.Context, in *ListByDateRequest, opts ...grpc.CallOption) (*ListResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListResponse)
-	err := c.cc.Invoke(ctx, EventService_ListOnMonth_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, EventService_ListByMonth_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -114,9 +114,9 @@ type EventServiceServer interface {
 	Create(context.Context, *Event) (*EventDataResponse, error)
 	Update(context.Context, *Event) (*EventDataResponse, error)
 	Delete(context.Context, *DeleteEventRequest) (*EmptyResponse, error)
-	ListOnDate(context.Context, *ListByDateRequest) (*ListResponse, error)
-	ListOnWeek(context.Context, *ListByDateRequest) (*ListResponse, error)
-	ListOnMonth(context.Context, *ListByDateRequest) (*ListResponse, error)
+	ListByDate(context.Context, *ListByDateRequest) (*ListResponse, error)
+	ListByWeek(context.Context, *ListByDateRequest) (*ListResponse, error)
+	ListByMonth(context.Context, *ListByDateRequest) (*ListResponse, error)
 	mustEmbedUnimplementedEventServiceServer()
 }
 
@@ -136,14 +136,14 @@ func (UnimplementedEventServiceServer) Update(context.Context, *Event) (*EventDa
 func (UnimplementedEventServiceServer) Delete(context.Context, *DeleteEventRequest) (*EmptyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
-func (UnimplementedEventServiceServer) ListOnDate(context.Context, *ListByDateRequest) (*ListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListOnDate not implemented")
+func (UnimplementedEventServiceServer) ListByDate(context.Context, *ListByDateRequest) (*ListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListByDate not implemented")
 }
-func (UnimplementedEventServiceServer) ListOnWeek(context.Context, *ListByDateRequest) (*ListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListOnWeek not implemented")
+func (UnimplementedEventServiceServer) ListByWeek(context.Context, *ListByDateRequest) (*ListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListByWeek not implemented")
 }
-func (UnimplementedEventServiceServer) ListOnMonth(context.Context, *ListByDateRequest) (*ListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListOnMonth not implemented")
+func (UnimplementedEventServiceServer) ListByMonth(context.Context, *ListByDateRequest) (*ListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListByMonth not implemented")
 }
 func (UnimplementedEventServiceServer) mustEmbedUnimplementedEventServiceServer() {}
 func (UnimplementedEventServiceServer) testEmbeddedByValue()                      {}
@@ -220,56 +220,56 @@ func _EventService_Delete_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EventService_ListOnDate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _EventService_ListByDate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListByDateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EventServiceServer).ListOnDate(ctx, in)
+		return srv.(EventServiceServer).ListByDate(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: EventService_ListOnDate_FullMethodName,
+		FullMethod: EventService_ListByDate_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventServiceServer).ListOnDate(ctx, req.(*ListByDateRequest))
+		return srv.(EventServiceServer).ListByDate(ctx, req.(*ListByDateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EventService_ListOnWeek_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _EventService_ListByWeek_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListByDateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EventServiceServer).ListOnWeek(ctx, in)
+		return srv.(EventServiceServer).ListByWeek(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: EventService_ListOnWeek_FullMethodName,
+		FullMethod: EventService_ListByWeek_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventServiceServer).ListOnWeek(ctx, req.(*ListByDateRequest))
+		return srv.(EventServiceServer).ListByWeek(ctx, req.(*ListByDateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EventService_ListOnMonth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _EventService_ListByMonth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListByDateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EventServiceServer).ListOnMonth(ctx, in)
+		return srv.(EventServiceServer).ListByMonth(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: EventService_ListOnMonth_FullMethodName,
+		FullMethod: EventService_ListByMonth_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventServiceServer).ListOnMonth(ctx, req.(*ListByDateRequest))
+		return srv.(EventServiceServer).ListByMonth(ctx, req.(*ListByDateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -294,16 +294,16 @@ var EventService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _EventService_Delete_Handler,
 		},
 		{
-			MethodName: "ListOnDate",
-			Handler:    _EventService_ListOnDate_Handler,
+			MethodName: "ListByDate",
+			Handler:    _EventService_ListByDate_Handler,
 		},
 		{
-			MethodName: "ListOnWeek",
-			Handler:    _EventService_ListOnWeek_Handler,
+			MethodName: "ListByWeek",
+			Handler:    _EventService_ListByWeek_Handler,
 		},
 		{
-			MethodName: "ListOnMonth",
-			Handler:    _EventService_ListOnMonth_Handler,
+			MethodName: "ListByMonth",
+			Handler:    _EventService_ListByMonth_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

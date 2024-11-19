@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -15,13 +16,20 @@ import (
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/logger"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model/event"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/http"
+	pb "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/protobuf"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/services"
 )
 
 var (
 	configFile string
 	logg       *logger.Logger
 )
+
+type pb_server struct {
+	pb.UnimplementedEventServiceServer
+}
 
 func init() {
 	flag.StringVar(
@@ -33,7 +41,7 @@ func init() {
 }
 
 func main() {
-	ctx := context.Background()
+	mainCtx := context.Background()
 	flag.Parse()
 
 	if flag.Arg(0) == "version" {
@@ -67,7 +75,7 @@ func main() {
 		eventRepo = memorystorage.New()
 		logg.Info("Memory adapters initialized")
 	case "sql":
-		eventRepo, err = sqlstorage.New(ctx, myConfig.Database, logg)
+		eventRepo, err = sqlstorage.New(mainCtx, myConfig.Database, logg)
 		if err != nil {
 			logg.Error(fmt.Sprintf("failed to initialize SQL storage: %s", err))
 			return
@@ -85,19 +93,45 @@ func main() {
 	)
 	logg.Info("App initialized")
 
-	// HTTP server
-	server := internalhttp.NewServer(logg, calendar, myConfig.Server)
-	logg.Info("HTTP server initialized")
-
 	// Signal handler
-	ctx, cancel := signal.NotifyContext(context.Background(),
+	mainCtx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()
 	logg.Info("Signal handler initialized")
 
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	// REST server
+	server := internalhttp.NewServer(logg, calendar, myConfig.RestServer)
+	logg.Info("HTTP server initialized")
+
+	go func() {
+		if err := server.Start(mainCtx); err != nil {
+			logg.Error("failed to start http server: " + err.Error())
+			cancel()
+			return
+		}
+		wg.Done()
+	}()
+
+	// GRPC server
+	service := services.NewEventService(eventRepo)
+	grpcServerService := grpc.NewService(service)
+	grpcServer := grpc.NewServer(myConfig.GrpcServer, grpcServerService)
+	logg.Info("GRPC server initialized")
+
+	go func() {
+		if err := grpcServer.Run(); err != nil {
+			logg.Error("failed to start grpc server: " + err.Error())
+			cancel()
+		}
+		wg.Done()
+	}()
+
 	// Graceful shutdown
 	go func() {
-		<-ctx.Done()
+		<-mainCtx.Done()
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 		defer cancel()
@@ -105,15 +139,15 @@ func main() {
 		if err := server.Stop(ctx); err != nil {
 			logg.Error("failed to stop http server: " + err.Error())
 		}
+
+		if err := grpcServer.Stop(ctx); err != nil {
+			logg.Error("failed to stop http server: " + err.Error())
+		}
 	}()
 
 	logg.Info("Calendar is running...")
-
-	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
-		cancel()
-		return
-	}
+	wg.Wait()
+	logg.Info("App shutdown!")
 }
 
 func InitLogger(loggerConf config.LoggerConf) *logger.Logger {

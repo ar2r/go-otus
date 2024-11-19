@@ -9,7 +9,7 @@ import (
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/db"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/logger"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model/event"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -42,14 +42,14 @@ func TestStorage_Add(t *testing.T) {
 	t.Skip("Skipping TestStorage_Add")
 	pool := setupTestDB(t)
 
-	e := event.Event{
+	e := model.Event{
 		ID:          uuid.New(),
 		Title:       "Test Event",
 		Description: "This is a test event",
 		StartDt:     time.Now(),
 		EndDt:       time.Now().Add(1 * time.Hour),
 		UserID:      uuid.Nil,
-		Notify:      time.Minute * 10,
+		NotifyAt:    time.Minute * 10,
 	}
 
 	type fields struct {
@@ -57,13 +57,13 @@ func TestStorage_Add(t *testing.T) {
 	}
 	type args struct {
 		ctx   context.Context
-		event event.Event
+		event model.Event
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		want    *event.Event
+		want    *model.Event
 		wantErr bool
 	}{
 		{
