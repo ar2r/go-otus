@@ -39,7 +39,7 @@ generate:
 	protoc -I ./api \
 	   --go_out internal/server/protobuf \
 	   --go_opt paths=source_relative \
-	   --go-grpc_out ./api \
+	   --go-grpc_out internal/server/protobuf \
 	   --go-grpc_opt paths=source_relative \
 	   ./api/*.proto
 
