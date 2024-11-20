@@ -3,22 +3,22 @@ package sqlstorage
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/database"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/pkg/easylog"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Storage struct {
-	logg *easylog.Logger
+	logg *slog.Logger
 	conn *pgxpool.Pool
 }
 
-func New(ctx context.Context, conf database.Config, logg *easylog.Logger) (*Storage, error) {
+func New(ctx context.Context, conf database.Config, logg *slog.Logger) (*Storage, error) {
 	pgxPool, err := connect(ctx, conf, logg)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func New(ctx context.Context, conf database.Config, logg *easylog.Logger) (*Stor
 	}, nil
 }
 
-func connect(ctx context.Context, conf database.Config, logg *easylog.Logger) (*pgxpool.Pool, error) {
+func connect(ctx context.Context, conf database.Config, logg *slog.Logger) (*pgxpool.Pool, error) {
 	pgxPool, err := database.Connect(ctx, conf)
 	if err != nil {
 		logg.Error(fmt.Sprintf("failed to create connection to database: %s", err))

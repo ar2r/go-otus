@@ -2,29 +2,20 @@ package app
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/google/uuid"
 )
 
 type App struct {
-	Logger         Logger
+	Logger         *slog.Logger
 	userRepository model.EventRepository
 }
 
-// Logger интерфейс для логирования.
-type Logger interface {
-	// InfoRaw логирование без форматирования
-	InfoRaw(msg string)
-	Debug(msg string)
-	Info(msg string)
-	Warn(msg string)
-	Error(msg string)
-}
-
-func New(logger Logger, repo model.EventRepository) *App {
+func New(logg *slog.Logger, repo model.EventRepository) *App {
 	return &App{
-		Logger:         logger,
+		Logger:         logg,
 		userRepository: repo,
 	}
 }

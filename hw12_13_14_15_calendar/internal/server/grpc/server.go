@@ -21,12 +21,6 @@ type Server struct {
 	grpcServer        *grpc.Server
 }
 
-type Logger interface {
-	InfoRaw(msg string)
-	Info(msg string)
-	Error(msg string)
-}
-
 type Application interface { // TODO
 }
 

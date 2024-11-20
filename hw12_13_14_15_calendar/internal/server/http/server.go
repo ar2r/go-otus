@@ -3,6 +3,7 @@ package httpserver
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -15,6 +16,11 @@ import (
 type Server struct {
 	app        *app.App
 	httpServer *http.Server
+	logg       ServerLogger
+}
+
+type ServerLogger interface {
+	Info(msg string, attrs ...slog.Attr)
 }
 
 // Application интерфейс для работы с событиями.
@@ -78,5 +84,5 @@ func (s *Server) registerRoutes() *http.ServeMux {
 }
 
 func (s *Server) registerLogger(mux *http.ServeMux) {
-	s.httpServer.Handler = loggingMiddleware(mux, s.app.Logger)
+	s.httpServer.Handler = loggingMiddleware(mux, s.logg)
 }

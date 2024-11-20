@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -12,24 +13,24 @@ type MockLogger struct {
 	logs []string
 }
 
-func (m *MockLogger) InfoRaw(msg string) {
+func (m *MockLogger) Log(level slog.Level, msg string, attrs ...slog.Attr) {
 	m.logs = append(m.logs, msg)
 }
 
-func (m *MockLogger) Info(msg string) {
-	m.logs = append(m.logs, msg)
+func (m *MockLogger) Debug(msg string, attrs ...slog.Attr) {
+	m.Log(slog.LevelDebug, msg, attrs...)
 }
 
-func (m *MockLogger) Error(msg string) {
-	m.logs = append(m.logs, msg)
+func (m *MockLogger) Info(msg string, attrs ...slog.Attr) {
+	m.Log(slog.LevelInfo, msg, attrs...)
 }
 
-func (m *MockLogger) Debug(msg string) {
-	m.logs = append(m.logs, msg)
+func (m *MockLogger) Warn(msg string, attrs ...slog.Attr) {
+	m.Log(slog.LevelWarn, msg, attrs...)
 }
 
-func (m *MockLogger) Warn(msg string) {
-	m.logs = append(m.logs, msg)
+func (m *MockLogger) Error(msg string, attrs ...slog.Attr) {
+	m.Log(slog.LevelError, msg, attrs...)
 }
 
 func TestLoggingMiddleware(t *testing.T) {

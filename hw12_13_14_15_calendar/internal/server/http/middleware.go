@@ -2,13 +2,16 @@ package httpserver
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
-
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 )
 
-func loggingMiddleware(next http.Handler, logg app.Logger) http.Handler {
+type MiddlewareLogger interface {
+	Info(msg string, attrs ...slog.Attr)
+}
+
+func loggingMiddleware(next http.Handler, logg MiddlewareLogger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		rr := &responseRecorder{w, http.StatusOK, 0}
@@ -25,7 +28,7 @@ func loggingMiddleware(next http.Handler, logg app.Logger) http.Handler {
 
 		logMsg := fmt.Sprintf("%s [%s] %s %s %s %d %d \"%s\"",
 			clientIP, timestamp, method, path, protocol, statusCode, responseSize, userAgent)
-		logg.InfoRaw(logMsg)
+		logg.Info(logMsg)
 	})
 }
 

@@ -1,8 +1,8 @@
 package easylog
 
 import (
-	"io"
 	"log"
+	"log/slog"
 	"os"
 )
 
@@ -13,74 +13,41 @@ const (
 	ERROR = "error"
 )
 
-// todo: Перевести на slog
+func New(level string, channel string, filename string) *slog.Logger {
+	var slogHandler slog.Handler
+	var slogLevel slog.Level
 
-type Logger struct {
-	level    string
-	channel  string
-	filename string
-	logger   *log.Logger
-}
+	switch level {
+	case DEBUG:
+		slogLevel = slog.LevelDebug
+	case INFO:
+		slogLevel = slog.LevelInfo
+	case WARN:
+		slogLevel = slog.LevelWarn
+	case ERROR:
+		slogLevel = slog.LevelError
+	default:
+		slogLevel = slog.LevelError
+	}
 
-func New(level string, channel string, filename string) *Logger {
-	var writer io.Writer
-	var err error
+	options := &slog.HandlerOptions{
+		Level: slogLevel,
+	}
 
 	switch channel {
 	case "file":
-		writer, err = os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
+		file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
 		if err != nil {
 			log.Fatal("Failed to open log file")
 		}
+		slogHandler = slog.NewTextHandler(file, options)
 	case "stdout":
-		writer = os.Stdout
+		slogHandler = slog.NewTextHandler(os.Stdout, options)
 	case "stderr":
-		writer = os.Stderr
+		slogHandler = slog.NewTextHandler(os.Stderr, options)
 	default:
 		log.Fatal("Invalid log channel")
 	}
 
-	return &Logger{
-		level:    level,
-		channel:  channel,
-		filename: filename,
-		logger:   log.New(writer, "", 0),
-	}
-}
-
-func (l *Logger) Report() {
-	l.Debug("Logger level: " + l.level + " (" + l.channel + ")")
-	if l.filename != "" {
-		l.Debug("Logger filename: " + l.filename)
-	}
-}
-
-func (l *Logger) Debug(msg string) {
-	if l.level == DEBUG {
-		l.logger.Println("⚙️ DEBUG: " + msg)
-	}
-}
-
-func (l *Logger) Info(msg string) {
-	if l.level == DEBUG || l.level == INFO {
-		l.logger.Println("🔵 INFO: " + msg)
-	}
-}
-
-func (l *Logger) Warn(msg string) {
-	if l.level == DEBUG || l.level == INFO || l.level == WARN {
-		l.logger.Println("🟡 WARN: " + msg)
-	}
-}
-
-func (l *Logger) Error(msg string) {
-	if l.level == DEBUG || l.level == INFO || l.level == WARN || l.level == ERROR {
-		l.logger.Println("🔴 ERROR: " + msg)
-	}
-}
-
-func (l *Logger) InfoRaw(msg string) {
-	if l.level == DEBUG || l.level == INFO {
-		l.logger.Println(msg)
-	}
+	return slog.New(slogHandler)
 }

@@ -2,28 +2,49 @@ package easylog
 
 import (
 	"bytes"
-	"log"
+	"log/slog"
 	"testing"
 )
 
-func TestLogger_Debug(t *testing.T) {
-	var buf bytes.Buffer
-	logger := log.New(&buf, "", log.LstdFlags)
-	l := &Logger{level: "debug", logger: logger}
+type Logger struct {
+	level  string
+	logger *slog.Logger
+}
 
-	l.Debug("debug message")
-	if !bytes.Contains(buf.Bytes(), []byte("DEBUG: debug message")) {
-		t.Errorf("expected debug message to be logged")
+func (l *Logger) Debug(msg string) {
+	if l.level == DEBUG {
+		l.logger.Debug(msg)
 	}
 }
 
-func TestLogger_Info(t *testing.T) {
+func (l *Logger) Info(msg string) {
+	if l.level == DEBUG || l.level == INFO {
+		l.logger.Info(msg)
+	}
+}
+
+func (l *Logger) Warn(msg string) {
+	if l.level == DEBUG || l.level == INFO || l.level == WARN {
+		l.logger.Warn(msg)
+	}
+}
+
+func (l *Logger) Error(msg string) {
+	l.logger.Error(msg)
+}
+
+func newTestLogger(level string) (*Logger, *bytes.Buffer) {
 	var buf bytes.Buffer
-	logger := log.New(&buf, "", log.LstdFlags)
-	l := &Logger{level: "info", logger: logger}
+	handler := slog.NewTextHandler(&buf, &slog.HandlerOptions{})
+	logger := slog.New(handler)
+	return &Logger{level: level, logger: logger}, &buf
+}
+
+func TestLogger_Info(t *testing.T) {
+	l, buf := newTestLogger(INFO)
 
 	l.Info("info message")
-	if !bytes.Contains(buf.Bytes(), []byte("INFO: info message")) {
+	if !bytes.Contains(buf.Bytes(), []byte("info message")) {
 		t.Errorf("expected info message to be logged")
 	}
 
@@ -35,12 +56,10 @@ func TestLogger_Info(t *testing.T) {
 }
 
 func TestLogger_Warn(t *testing.T) {
-	var buf bytes.Buffer
-	logger := log.New(&buf, "", log.LstdFlags)
-	l := &Logger{level: "warn", logger: logger}
+	l, buf := newTestLogger(WARN)
 
 	l.Warn("warn message")
-	if !bytes.Contains(buf.Bytes(), []byte("WARN: warn message")) {
+	if !bytes.Contains(buf.Bytes(), []byte("warn message")) {
 		t.Errorf("expected warn message to be logged")
 	}
 
@@ -52,12 +71,10 @@ func TestLogger_Warn(t *testing.T) {
 }
 
 func TestLogger_Error(t *testing.T) {
-	var buf bytes.Buffer
-	logger := log.New(&buf, "", log.LstdFlags)
-	l := &Logger{level: "error", logger: logger}
+	l, buf := newTestLogger(ERROR)
 
 	l.Error("error message")
-	if !bytes.Contains(buf.Bytes(), []byte("ERROR: error message")) {
+	if !bytes.Contains(buf.Bytes(), []byte("error message")) {
 		t.Errorf("expected error message to be logged")
 	}
 

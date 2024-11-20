@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"sync"
@@ -23,7 +24,7 @@ import (
 
 var (
 	configFile string
-	logg       *easylog.Logger
+	logg       *slog.Logger
 	eventRepo  model.EventRepository
 )
 
@@ -34,6 +35,10 @@ func init() {
 		"/etc/calendar/config.toml.example",
 		"Path to configuration file",
 	)
+}
+
+func GetLogger() *slog.Logger {
+	return logg
 }
 
 func main() {
@@ -52,6 +57,7 @@ func main() {
 	}
 
 	logg = initLogger(myConfig.Logger)
+	app.SetLogger(logg)
 
 	if flag.Arg(0) == "migrate" {
 		if err := MigrateRun(logg, myConfig.Database, true); err != nil {
@@ -152,7 +158,7 @@ func initRepository(ctx context.Context, myConfig *config.Config) (model.EventRe
 	return eventRepo, nil
 }
 
-func initLogger(loggerConf config.LoggerConf) *easylog.Logger {
+func initLogger(loggerConf config.LoggerConfig) *slog.Logger {
 	return easylog.New(
 		loggerConf.Level,
 		loggerConf.Channel,

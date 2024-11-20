@@ -13,7 +13,7 @@ type Config struct {
 	HTTPServer httpserver.Config `toml:"http"`
 	GRPCServer grpcserver.Config `toml:"grpc"`
 	Database   database.Config   `toml:"database"`
-	Logger     LoggerConf        `toml:"logger"`
+	Logger     LoggerConfig      `toml:"logger"`
 }
 
 func LoadConfig(path string) (*Config, error) {
