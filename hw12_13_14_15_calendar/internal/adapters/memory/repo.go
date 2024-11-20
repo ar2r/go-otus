@@ -46,30 +46,30 @@ func (s *Storage) CreateEvent(ctx context.Context, userID uuid.UUID, id uuid.UUI
 }
 
 // Get Вернуть событие по идентификатору.
-func (s *Storage) Get(_ context.Context, id uuid.UUID) (*model.Event, error) {
+func (s *Storage) Get(_ context.Context, id uuid.UUID) (model.Event, error) {
 	if v, exists := s.items.Load(id); exists {
-		return v.(*model.Event), nil
+		return v.(model.Event), nil
 	}
-	return nil, adapters.ErrNotFound
+	return model.Event{}, adapters.ErrNotFound
 }
 
 // Add Добавить событие.
-func (s *Storage) Add(_ context.Context, e model.Event) (*model.Event, error) {
+func (s *Storage) Add(_ context.Context, e model.Event) (model.Event, error) {
 	s.items.Store(e.ID, e)
 	v, _ := s.items.Load(e.ID)
 	result := v.(model.Event)
-	return &result, nil
+	return result, nil
 }
 
 // Update Обновить событие.
-func (s *Storage) Update(_ context.Context, e model.Event) (*model.Event, error) {
+func (s *Storage) Update(_ context.Context, e model.Event) (model.Event, error) {
 	if _, exists := s.items.Load(e.ID); !exists {
-		return nil, adapters.ErrNotFound
+		return model.Event{}, adapters.ErrNotFound
 	}
 	s.items.Store(e.ID, e)
 	v, _ := s.items.Load(e.ID)
 	result := v.(model.Event)
-	return &result, nil
+	return result, nil
 }
 
 // Delete Удалить событие.

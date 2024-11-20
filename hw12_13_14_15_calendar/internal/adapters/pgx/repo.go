@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/database"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/pkg/easylog"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Storage struct {
-	logg app.Logger
+	logg *easylog.Logger
 	conn *pgxpool.Pool
 }
 
@@ -44,45 +44,40 @@ func (s *Storage) Close() {
 }
 
 // Add Добавить событие.
-func (s *Storage) Add(ctx context.Context, event model.Event) (*model.Event, error) {
+func (s *Storage) Add(ctx context.Context, event model.Event) (model.Event, error) {
 	_, err := s.conn.Exec(ctx,
-		"INSERT INTO events (id, title, description, start_dt, end_dt, user_id, notify) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+		"INSERT INTO events (id, title, description, start_dt, end_dt, user_id, notify_at) VALUES ($1, $2, $3, $4, $5, $6, $7)",
 		event.ID, event.Title, event.Description, event.StartDt, event.EndDt, event.UserID, event.NotifyAt)
 	if err != nil {
-		return nil, err
+		return model.Event{}, err
 	}
-	return &event, nil
+	return event, nil
 }
 
 // Get Вернуть событие по идентификатору.
-func (s *Storage) Get(ctx context.Context, id uuid.UUID) (*model.Event, error) {
-	row := s.conn.QueryRow(ctx, "SELECT * FROM events WHERE id = $1", id)
-
-	var event model.Event
-	err := row.Scan(
-		&event.ID,
-		&event.Title,
-		&event.Description,
-		&event.StartDt,
-		&event.EndDt,
-		&event.UserID,
-		&event.NotifyAt)
+func (s *Storage) Get(ctx context.Context, id uuid.UUID) (model.Event, error) {
+	rows, err := s.conn.Query(ctx, "SELECT * FROM events WHERE id = $1", id)
 	if err != nil {
-		return nil, err
+		return model.Event{}, err
 	}
+	defer rows.Close()
 
-	return &event, nil
+	event, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[model.Event])
+	if err != nil {
+		return model.Event{}, err
+	}
+	return event, nil
 }
 
 // Update Обновить событие.
-func (s *Storage) Update(ctx context.Context, event model.Event) (*model.Event, error) {
+func (s *Storage) Update(ctx context.Context, event model.Event) (model.Event, error) {
 	_, err := s.conn.Exec(ctx,
-		"UPDATE events SET title = $1, description = $2, start_dt = $3, end_dt = $4, user_id = $5, notify = $6 WHERE id = $7",
+		"UPDATE events SET title = $1, description = $2, start_dt = $3, end_dt = $4, user_id = $5, notify_at = $6 WHERE id = $7",
 		event.Title, event.Description, event.StartDt, event.EndDt, event.UserID, event.NotifyAt, event.ID)
 	if err != nil {
-		return nil, err
+		return model.Event{}, err
 	}
-	return &event, nil
+	return event, nil
 }
 
 // Delete Удалить событие.
@@ -94,34 +89,6 @@ func (s *Storage) Delete(ctx context.Context, uuid uuid.UUID) error {
 	return nil
 }
 
-// List Вернуть все события.
-func (s *Storage) List(ctx context.Context) ([]model.Event, error) {
-	rows, err := s.conn.Query(ctx, "SELECT * FROM events")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var events []model.Event
-	for rows.Next() {
-		var event model.Event
-		err := rows.Scan(
-			&event.ID,
-			&event.Title,
-			&event.Description,
-			&event.StartDt,
-			&event.EndDt,
-			&event.UserID,
-			&event.NotifyAt)
-		if err != nil {
-			return nil, err
-		}
-		events = append(events, event)
-	}
-
-	return events, nil
-}
-
 // ListByPeriod Найти события, которые пересекается с указанным временным промежутком.
 func (s *Storage) ListByPeriod(ctx context.Context, startDt, endDt time.Time) ([]model.Event, error) {
 	rows, err := s.conn.Query(ctx, "SELECT * FROM events WHERE start_dt < $1 AND end_dt > $2", endDt, startDt)
@@ -130,23 +97,10 @@ func (s *Storage) ListByPeriod(ctx context.Context, startDt, endDt time.Time) ([
 	}
 	defer rows.Close()
 
-	var events []model.Event
-	for rows.Next() {
-		var event model.Event
-		err := rows.Scan(
-			&event.ID,
-			&event.Title,
-			&event.Description,
-			&event.StartDt,
-			&event.EndDt,
-			&event.UserID,
-			&event.NotifyAt)
-		if err != nil {
-			return nil, err
-		}
-		events = append(events, event)
+	events, err := pgx.CollectRows(rows, pgx.RowToStructByName[model.Event])
+	if err != nil {
+		return nil, err
 	}
-
 	return events, nil
 }
 

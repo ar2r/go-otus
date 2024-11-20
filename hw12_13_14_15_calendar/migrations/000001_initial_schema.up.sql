@@ -9,6 +9,6 @@ CREATE TABLE events
     end_dt      TIMESTAMP NOT NULL,
     description TEXT,
     user_id     UUID      NOT NULL,
-    notify INTERVAL
+    notify_at INTERVAL
 );
 

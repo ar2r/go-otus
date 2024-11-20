@@ -8,8 +8,8 @@ import (
 )
 
 type EventServiceInterface interface {
-	Add(ctx context.Context, dto dto.CreateEventDto) (*model.Event, error)
-	Update(ctx context.Context, dto dto.UpdateEventDto) (*model.Event, error)
+	Add(ctx context.Context, dto dto.CreateEventDto) (model.Event, error)
+	Update(ctx context.Context, dto dto.UpdateEventDto) (model.Event, error)
 	Delete(ctx context.Context, dto dto.DeleteEventDto) error
 	ListByDate(ctx context.Context, dto dto.ListByDateDto) ([]model.Event, error)
 	ListByWeek(ctx context.Context, dto dto.ListByDateDto) ([]model.Event, error)
@@ -26,16 +26,16 @@ func NewEventService(repository model.EventRepository) EventServiceInterface {
 	}
 }
 
-func (s EventService) Add(ctx context.Context, dto dto.CreateEventDto) (*model.Event, error) {
+func (s EventService) Add(ctx context.Context, dto dto.CreateEventDto) (model.Event, error) {
 	e := dto.ToModel()
 	err := e.GenerateID()
 	if err != nil {
-		return nil, err
+		return model.Event{}, err
 	}
 	return s.repository.Add(ctx, e)
 }
 
-func (s EventService) Update(ctx context.Context, dto dto.UpdateEventDto) (*model.Event, error) {
+func (s EventService) Update(ctx context.Context, dto dto.UpdateEventDto) (model.Event, error) {
 	um := dto.ToModel()
 	return s.repository.Update(ctx, um)
 }

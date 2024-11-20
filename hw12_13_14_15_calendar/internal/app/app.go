@@ -37,11 +37,11 @@ func (a *App) CreateEvent(ctx context.Context, e model.Event) error {
 	return nil
 }
 
-func (a *App) GetEvent(ctx context.Context, id uuid.UUID) (*model.Event, error) {
+func (a *App) GetEvent(ctx context.Context, id uuid.UUID) (model.Event, error) {
 	return a.userRepository.Get(ctx, id)
 }
 
-func (a *App) UpdateEvent(ctx context.Context, ev model.Event) (*model.Event, error) {
+func (a *App) UpdateEvent(ctx context.Context, ev model.Event) (model.Event, error) {
 	return a.userRepository.Update(ctx, ev)
 }
 

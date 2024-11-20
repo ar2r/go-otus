@@ -24,6 +24,14 @@ func (m *MockLogger) Error(msg string) {
 	m.logs = append(m.logs, msg)
 }
 
+func (m *MockLogger) Debug(msg string) {
+	m.logs = append(m.logs, msg)
+}
+
+func (m *MockLogger) Warn(msg string) {
+	m.logs = append(m.logs, msg)
+}
+
 func TestLoggingMiddleware(t *testing.T) {
 	logg := &MockLogger{}
 	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
