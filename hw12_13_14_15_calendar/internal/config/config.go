@@ -10,8 +10,8 @@ import (
 
 type Config struct {
 	App        app.Config        `toml:"app"`
-	HttpServer httpserver.Config `toml:"http"`
-	GrpcServer grpcserver.Config `toml:"grpc"`
+	HTTPServer httpserver.Config `toml:"http"`
+	GRPCServer grpcserver.Config `toml:"grpc"`
 	Database   database.Config   `toml:"database"`
 	Logger     LoggerConf        `toml:"logger"`
 }

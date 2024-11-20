@@ -48,7 +48,6 @@ func (s *Server) Run() error {
 	lsn, err := net.Listen("tcp", listenAddr)
 	if err != nil {
 		return err
-
 	}
 	opts := []logging.Option{
 		logging.WithLogOnEvents(logging.StartCall, logging.FinishCall),

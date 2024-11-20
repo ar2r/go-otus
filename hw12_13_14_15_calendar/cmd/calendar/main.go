@@ -61,7 +61,7 @@ func main() {
 	}
 
 	// Event EventRepository
-	eventRepo, err = initRepository(ctx, myConfig, err)
+	eventRepo, err = initRepository(ctx, myConfig)
 	if err != nil {
 		logg.Error("failed to create repository: " + err.Error())
 		return
@@ -85,7 +85,7 @@ func main() {
 	serversWG.Add(2)
 
 	// REST httpServer
-	httpServer := internalhttp.NewServer(calendar, myConfig.HttpServer)
+	httpServer := internalhttp.NewServer(calendar, myConfig.HTTPServer)
 	logg.Info("HTTP server initialized")
 
 	go func() {
@@ -101,7 +101,7 @@ func main() {
 	// GRPC httpServer
 	service := services.NewEventService(eventRepo)
 	grpcServerService := grpcserver.NewService(service)
-	grpcServer := grpcserver.NewServer(myConfig.GrpcServer, grpcServerService)
+	grpcServer := grpcserver.NewServer(myConfig.GRPCServer, grpcServerService)
 	logg.Info("GRPC server initialized")
 
 	go func() {
@@ -119,11 +119,9 @@ func main() {
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 		defer cancel()
-
 		if err := httpServer.Stop(ctx); err != nil {
 			logg.Error("failed to stop HTTP server: " + err.Error())
 		}
-
 		if err := grpcServer.Stop(ctx); err != nil {
 			logg.Error("failed to stop GRPC server: " + err.Error())
 		}
@@ -134,7 +132,10 @@ func main() {
 	logg.Info("App shutdown!")
 }
 
-func initRepository(ctx context.Context, myConfig *config.Config, err error) (model.EventRepository, error) {
+func initRepository(ctx context.Context, myConfig *config.Config) (model.EventRepository, error) {
+	var eventRepo model.EventRepository
+	var err error
+
 	switch myConfig.App.Storage {
 	case "memory":
 		eventRepo = memorystorage.New()
