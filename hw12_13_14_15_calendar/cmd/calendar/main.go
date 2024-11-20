@@ -142,7 +142,7 @@ func initRepository(ctx context.Context, myConfig *config.Config, err error) (mo
 	case "sql":
 		eventRepo, err = sqlstorage.New(ctx, myConfig.Database, logg)
 		if err != nil {
-			return nil, fmt.Errorf("failed to initialize SQL storage: %s", err)
+			return nil, fmt.Errorf("failed to initialize SQL storage: %w", err)
 		}
 		logg.Info("SQL adapters initialized")
 	default:

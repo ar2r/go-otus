@@ -59,7 +59,7 @@ func TestStorage_Add(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *model.Event
+		want    model.Event
 		wantErr bool
 	}{
 		{
@@ -71,7 +71,7 @@ func TestStorage_Add(t *testing.T) {
 				ctx:   context.Background(),
 				event: e,
 			},
-			want:    &e,
+			want:    e,
 			wantErr: false,
 		},
 	}

@@ -20,7 +20,7 @@ type Server struct {
 // Application интерфейс для работы с событиями.
 type Application interface {
 	CreateEvent(ctx context.Context, e model.Event) error
-	GetEvent(ctx context.Context, id uuid.UUID) (*model.Event, error)
+	GetEvent(ctx context.Context, id uuid.UUID) (model.Event, error)
 	DeleteEvent(ctx context.Context, id uuid.UUID) error
 }
 

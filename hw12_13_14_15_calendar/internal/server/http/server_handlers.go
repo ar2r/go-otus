@@ -25,8 +25,8 @@ func (s *Server) createEventHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) getEventHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[len("/events/"):]
-	eventId := uuid.MustParse(id)
-	e, err := s.app.GetEvent(r.Context(), eventId)
+	eventID := uuid.MustParse(id)
+	e, err := s.app.GetEvent(r.Context(), eventID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -40,8 +40,8 @@ func (s *Server) getEventHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) deleteEventHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Path[len("/events/"):]
-	eventId := uuid.MustParse(id)
-	if err := s.app.DeleteEvent(r.Context(), eventId); err != nil {
+	eventID := uuid.MustParse(id)
+	if err := s.app.DeleteEvent(r.Context(), eventID); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
