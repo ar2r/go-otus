@@ -4,7 +4,7 @@
 // - protoc             v5.28.3
 // source: EventService.proto
 
-package pb
+package grpcprotobuf
 
 import (
 	context "context"

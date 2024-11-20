@@ -1,15 +1,6 @@
 CREATE
 EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE users
-(
-    id   UUID PRIMARY KEY,
-    name VARCHAR(256)
-);
-
-INSERT INTO users (id, name)
-VALUES ('00000000-0000-0000-0000-000000000000', 'Alice');
-
 CREATE TABLE events
 (
     id          UUID PRIMARY KEY,
@@ -18,9 +9,6 @@ CREATE TABLE events
     end_dt      TIMESTAMP NOT NULL,
     description TEXT,
     user_id     UUID      NOT NULL,
-    notify INTERVAL,
-    CONSTRAINT fk_user
-        FOREIGN KEY (user_id)
-            REFERENCES users (id)
+    notify INTERVAL
 );
 

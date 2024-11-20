@@ -5,7 +5,6 @@ import (
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/dto"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model/event"
 )
 
 type EventServiceInterface interface {
@@ -18,10 +17,10 @@ type EventServiceInterface interface {
 }
 
 type EventService struct {
-	repository event.Repository
+	repository model.EventRepository
 }
 
-func NewEventService(repository event.Repository) EventServiceInterface {
+func NewEventService(repository model.EventRepository) EventServiceInterface {
 	return &EventService{
 		repository: repository,
 	}
@@ -29,6 +28,10 @@ func NewEventService(repository event.Repository) EventServiceInterface {
 
 func (s EventService) Add(ctx context.Context, dto dto.CreateEventDto) (*model.Event, error) {
 	e := dto.ToModel()
+	err := e.GenerateID()
+	if err != nil {
+		return nil, err
+	}
 	return s.repository.Add(ctx, e)
 }
 

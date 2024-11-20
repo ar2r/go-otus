@@ -14,22 +14,18 @@ import (
 	sqlstorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters/pgx"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/logger"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model/event"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/http"
-	pb "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/protobuf"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/services"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/pkg/easylog"
 )
 
 var (
 	configFile string
-	logg       *logger.Logger
+	logg       *easylog.Logger
+	eventRepo  model.EventRepository
 )
-
-type pb_server struct {
-	pb.UnimplementedEventServiceServer
-}
 
 func init() {
 	flag.StringVar(
@@ -41,7 +37,7 @@ func init() {
 }
 
 func main() {
-	mainCtx := context.Background()
+	ctx := context.Background()
 	flag.Parse()
 
 	if flag.Arg(0) == "version" {
@@ -55,10 +51,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	logg = InitLogger(myConfig.Logger)
-	if myConfig.App.Debug {
-		logg.Report()
-	}
+	logg = initLogger(myConfig.Logger)
 
 	if flag.Arg(0) == "migrate" {
 		if err := MigrateRun(logg, myConfig.Database, true); err != nil {
@@ -67,91 +60,99 @@ func main() {
 		return
 	}
 
-	// Event Repository
-	var eventRepo event.Repository
+	// Event EventRepository
+	eventRepo, err = initRepository(ctx, myConfig, err)
+	if err != nil {
+		logg.Error("failed to create repository: " + err.Error())
+		return
+	}
 
+	// Application
+	calendar := app.New(logg, eventRepo)
+	logg.Info("App initialized")
+
+	// Signal handler
+	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
+	defer cancel()
+	logg.Info("Signal handler initialized")
+
+	/**
+	 *
+	 * Start httpServer listeners
+	 *
+	 */
+	serversWG := sync.WaitGroup{}
+	serversWG.Add(2)
+
+	// REST httpServer
+	httpServer := internalhttp.NewServer(calendar, myConfig.RestServer)
+	logg.Info("HTTP server initialized")
+
+	go func() {
+		defer serversWG.Done()
+
+		if err := httpServer.Start(ctx); err != nil {
+			logg.Error("failed to start HTTP server: " + err.Error())
+			cancel()
+			return
+		}
+	}()
+
+	// GRPC httpServer
+	service := services.NewEventService(eventRepo)
+	grpcServerService := grpcserver.NewService(service)
+	grpcServer := grpcserver.NewServer(myConfig.GrpcServer, grpcServerService)
+	logg.Info("GRPC server initialized")
+
+	go func() {
+		defer serversWG.Done()
+
+		if err := grpcServer.Run(); err != nil {
+			logg.Error("failed to start grpc GRPC server: " + err.Error())
+			cancel()
+		}
+	}()
+
+	// Graceful shutdown
+	go func() {
+		<-ctx.Done()
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+		defer cancel()
+
+		if err := httpServer.Stop(ctx); err != nil {
+			logg.Error("failed to stop HTTP server: " + err.Error())
+		}
+
+		if err := grpcServer.Stop(ctx); err != nil {
+			logg.Error("failed to stop GRPC server: " + err.Error())
+		}
+	}()
+	logg.Info("Calendar is running...")
+
+	serversWG.Wait()
+	logg.Info("App shutdown!")
+}
+
+func initRepository(ctx context.Context, myConfig *config.Config, err error) (model.EventRepository, error) {
 	switch myConfig.App.Storage {
 	case "memory":
 		eventRepo = memorystorage.New()
 		logg.Info("Memory adapters initialized")
 	case "sql":
-		eventRepo, err = sqlstorage.New(mainCtx, myConfig.Database, logg)
+		eventRepo, err = sqlstorage.New(ctx, myConfig.Database, logg)
 		if err != nil {
-			logg.Error(fmt.Sprintf("failed to initialize SQL storage: %s", err))
-			return
+			return nil, fmt.Errorf("failed to initialize SQL storage: %s", err)
 		}
 		logg.Info("SQL adapters initialized")
 	default:
-		logg.Error("Invalid adapters type: " + myConfig.App.Storage)
-		return
+		return nil, fmt.Errorf("invalid adapters type: %s", myConfig.App.Storage)
 	}
-
-	// Application
-	calendar := app.New(
-		logg,
-		eventRepo,
-	)
-	logg.Info("App initialized")
-
-	// Signal handler
-	mainCtx, cancel := signal.NotifyContext(context.Background(),
-		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-	defer cancel()
-	logg.Info("Signal handler initialized")
-
-	wg := sync.WaitGroup{}
-	wg.Add(2)
-
-	// REST server
-	server := internalhttp.NewServer(logg, calendar, myConfig.RestServer)
-	logg.Info("HTTP server initialized")
-
-	go func() {
-		if err := server.Start(mainCtx); err != nil {
-			logg.Error("failed to start http server: " + err.Error())
-			cancel()
-			return
-		}
-		wg.Done()
-	}()
-
-	// GRPC server
-	service := services.NewEventService(eventRepo)
-	grpcServerService := grpc.NewService(service)
-	grpcServer := grpc.NewServer(myConfig.GrpcServer, grpcServerService)
-	logg.Info("GRPC server initialized")
-
-	go func() {
-		if err := grpcServer.Run(); err != nil {
-			logg.Error("failed to start grpc server: " + err.Error())
-			cancel()
-		}
-		wg.Done()
-	}()
-
-	// Graceful shutdown
-	go func() {
-		<-mainCtx.Done()
-
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-		defer cancel()
-
-		if err := server.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
-		}
-
-		if err := grpcServer.Stop(ctx); err != nil {
-			logg.Error("failed to stop http server: " + err.Error())
-		}
-	}()
-
-	logg.Info("Calendar is running...")
-	wg.Wait()
-	logg.Info("App shutdown!")
+	return eventRepo, nil
 }
 
-func InitLogger(loggerConf config.LoggerConf) *logger.Logger {
-	return logger.New(
+func initLogger(loggerConf config.LoggerConf) *easylog.Logger {
+	return easylog.New(
 		loggerConf.Level,
 		loggerConf.Channel,
 		loggerConf.Filename,

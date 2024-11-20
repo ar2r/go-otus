@@ -1,11 +1,11 @@
-package grpc
+package grpcserver
 
 import (
 	"context"
 
 	dto2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/dto"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
-	pb "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/protobuf"
+	pb "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/grpc/protobuf"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/services"
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/timestamp"

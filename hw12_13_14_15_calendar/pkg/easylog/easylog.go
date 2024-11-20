@@ -1,4 +1,4 @@
-package logger
+package easylog
 
 import (
 	"io"
@@ -12,6 +12,8 @@ const (
 	WARN  = "warn"
 	ERROR = "error"
 )
+
+// todo: Перевести на slog
 
 type Logger struct {
 	level    string

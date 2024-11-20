@@ -1,4 +1,4 @@
-package grpc
+package grpcserver
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
-	pb "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/protobuf"
+	pb "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/grpc/protobuf"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -78,5 +78,6 @@ func (s *Server) Stop(ctx context.Context) error {
 	if s.grpcServer != nil {
 		s.grpcServer.GracefulStop()
 	}
+	// logg.Info("HTTP server stopped")
 	return nil
 }

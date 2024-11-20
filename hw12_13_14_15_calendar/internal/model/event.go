@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,4 +16,13 @@ type Event struct {
 	Description string        // Описание события - длинный текст, опционально;
 	UserID      uuid.UUID     // ID пользователя, владельца события;
 	NotifyAt    time.Duration // За сколько времени высылать уведомление, опционально.
+}
+
+func (e *Event) GenerateID() error {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return fmt.Errorf("error generate uuid: %w", err)
+	}
+	e.ID = id
+	return nil
 }

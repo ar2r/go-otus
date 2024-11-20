@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"context"
@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/logger"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/pkg/easylog"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func Connect(ctx context.Context, cfg config.DatabaseConf, _ *logger.Logger) (*pgxpool.Pool, error) {
+func Connect(ctx context.Context, cfg config.DatabaseConf, _ *easylog.Logger) (*pgxpool.Pool, error) {
 	connectionString := fmt.Sprintf(
 		"postgres://%s:%s@%s/%s?sslmode=%s&TimeZone=%s&target_session_attrs=%s",
 		cfg.Username,

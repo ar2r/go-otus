@@ -19,6 +19,9 @@ build-img:
 run-img: build-img
 	docker run $(DOCKER_IMG)
 
+clean:
+	rm -rf $(BIN)
+
 version: build
 	$(BIN) version
 
@@ -32,13 +35,13 @@ lint: install-lint-deps
 	golangci-lint run ./...
 
 generate:
-	rm -rf ./internal/server/protobuf
-	mkdir -p ./internal/server/protobuf
+	rm -rf ./internal/server/grpc/protobuf
+	mkdir -p ./internal/server/grpc/protobuf
 
 	protoc -I ./api \
-	   --go_out internal/server/protobuf \
+	   --go_out internal/server/grpc/protobuf \
 	   --go_opt paths=source_relative \
-	   --go-grpc_out internal/server/protobuf \
+	   --go-grpc_out internal/server/grpc/protobuf \
 	   --go-grpc_opt paths=source_relative \
 	   ./api/*.proto
 

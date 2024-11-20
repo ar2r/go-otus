@@ -1,12 +1,14 @@
-package internalhttp
+package httpserver
 
 import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 )
 
-func loggingMiddleware(next http.Handler, logg Logger) http.Handler {
+func loggingMiddleware(next http.Handler, logg app.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		rr := &responseRecorder{w, http.StatusOK, 0}

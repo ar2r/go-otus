@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/golang-migrate/migrate/v4"
 	// Register the pgx database driver.
@@ -12,12 +13,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-type Logger interface {
-	Info(msg string)
-	Error(msg string)
-}
-
-func MigrateRun(logg Logger, conf config.DatabaseConf, rerun bool) error {
+func MigrateRun(logg app.Logger, conf config.DatabaseConf, rerun bool) error {
 	logg.Info("Connecting to database...")
 	dsn := fmt.Sprintf(
 		"pgx://%s:%s@%s/%s?sslmode=%s&TimeZone=%s&target_session_attrs=%s",
