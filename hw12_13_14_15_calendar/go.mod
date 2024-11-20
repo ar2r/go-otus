@@ -14,6 +14,7 @@ require (
 )
 
 require (
+	github.com/georgysavva/scany v1.2.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
@@ -25,6 +26,7 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgtype v1.14.4 // indirect
 	github.com/jackc/pgx/v4 v4.18.3 // indirect
+	github.com/jackc/puddle v1.3.0 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	go.uber.org/atomic v1.7.0 // indirect

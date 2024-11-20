@@ -10,9 +10,9 @@ import (
 type CreateEventDto struct {
 	UserID      uuid.UUID     `json:"userId"`
 	Title       string        `json:"title"`
+	Description string        `json:"description"`
 	StartDt     time.Time     `json:"startDt"`
 	EndDt       time.Time     `json:"endDt"`
-	Description string        `json:"description"`
 	NotifyAt    time.Duration `json:"notifyAt"`
 }
 
@@ -20,9 +20,9 @@ func (d *CreateEventDto) ToModel() model.Event {
 	return model.Event{
 		UserID:      d.UserID,
 		Title:       d.Title,
+		Description: d.Description,
 		StartDt:     d.StartDt,
 		EndDt:       d.EndDt,
-		Description: d.Description,
 		NotifyAt:    d.NotifyAt,
 	}
 }

@@ -21,7 +21,7 @@ type Event struct {
 func (e *Event) GenerateID() error {
 	id, err := uuid.NewV7()
 	if err != nil {
-		return fmt.Errorf("error generate uuid: %w", err)
+		return fmt.Errorf("generate uuid failed: %w", err)
 	}
 	e.ID = id
 	return nil

@@ -14,8 +14,8 @@ import (
 )
 
 type Storage struct {
-	logg    app.Logger
-	pgxPool *pgxpool.Pool
+	logg app.Logger
+	conn *pgxpool.Pool
 }
 
 func New(ctx context.Context, conf database.Config, logg *easylog.Logger) (*Storage, error) {
@@ -25,8 +25,8 @@ func New(ctx context.Context, conf database.Config, logg *easylog.Logger) (*Stor
 	}
 
 	return &Storage{
-		logg:    logg,
-		pgxPool: pgxPool,
+		logg: logg,
+		conn: pgxPool,
 	}, nil
 }
 
@@ -40,12 +40,12 @@ func connect(ctx context.Context, conf database.Config, logg *easylog.Logger) (*
 }
 
 func (s *Storage) Close() {
-	s.pgxPool.Close()
+	s.conn.Close()
 }
 
 // Add Добавить событие.
 func (s *Storage) Add(ctx context.Context, event model.Event) (*model.Event, error) {
-	_, err := s.pgxPool.Exec(ctx,
+	_, err := s.conn.Exec(ctx,
 		"INSERT INTO events (id, title, description, start_dt, end_dt, user_id, notify) VALUES ($1, $2, $3, $4, $5, $6, $7)",
 		event.ID, event.Title, event.Description, event.StartDt, event.EndDt, event.UserID, event.NotifyAt)
 	if err != nil {
@@ -56,7 +56,7 @@ func (s *Storage) Add(ctx context.Context, event model.Event) (*model.Event, err
 
 // Get Вернуть событие по идентификатору.
 func (s *Storage) Get(ctx context.Context, id uuid.UUID) (*model.Event, error) {
-	row := s.pgxPool.QueryRow(ctx, "SELECT * FROM events WHERE id = $1", id)
+	row := s.conn.QueryRow(ctx, "SELECT * FROM events WHERE id = $1", id)
 
 	var event model.Event
 	err := row.Scan(
@@ -76,7 +76,7 @@ func (s *Storage) Get(ctx context.Context, id uuid.UUID) (*model.Event, error) {
 
 // Update Обновить событие.
 func (s *Storage) Update(ctx context.Context, event model.Event) (*model.Event, error) {
-	_, err := s.pgxPool.Exec(ctx,
+	_, err := s.conn.Exec(ctx,
 		"UPDATE events SET title = $1, description = $2, start_dt = $3, end_dt = $4, user_id = $5, notify = $6 WHERE id = $7",
 		event.Title, event.Description, event.StartDt, event.EndDt, event.UserID, event.NotifyAt, event.ID)
 	if err != nil {
@@ -87,7 +87,7 @@ func (s *Storage) Update(ctx context.Context, event model.Event) (*model.Event, 
 
 // Delete Удалить событие.
 func (s *Storage) Delete(ctx context.Context, uuid uuid.UUID) error {
-	_, err := s.pgxPool.Exec(ctx, "DELETE FROM events WHERE id = $1", uuid)
+	_, err := s.conn.Exec(ctx, "DELETE FROM events WHERE id = $1", uuid)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (s *Storage) Delete(ctx context.Context, uuid uuid.UUID) error {
 
 // List Вернуть все события.
 func (s *Storage) List(ctx context.Context) ([]model.Event, error) {
-	rows, err := s.pgxPool.Query(ctx, "SELECT * FROM events")
+	rows, err := s.conn.Query(ctx, "SELECT * FROM events")
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (s *Storage) List(ctx context.Context) ([]model.Event, error) {
 
 // ListByPeriod Найти события, которые пересекается с указанным временным промежутком.
 func (s *Storage) ListByPeriod(ctx context.Context, startDt, endDt time.Time) ([]model.Event, error) {
-	rows, err := s.pgxPool.Query(ctx, "SELECT * FROM events WHERE start_dt < $1 AND end_dt > $2", endDt, startDt)
+	rows, err := s.conn.Query(ctx, "SELECT * FROM events WHERE start_dt < $1 AND end_dt > $2", endDt, startDt)
 	if err != nil {
 		return nil, err
 	}

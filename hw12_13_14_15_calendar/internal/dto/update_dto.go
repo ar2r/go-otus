@@ -11,9 +11,9 @@ type UpdateEventDto struct {
 	ID          uuid.UUID     `json:"id"`
 	UserID      uuid.UUID     `json:"userId"`
 	Title       string        `json:"title"`
+	Description string        `json:"description"`
 	StartDt     time.Time     `json:"startDt"`
 	EndDt       time.Time     `json:"endDt"`
-	Description string        `json:"description"`
 	NotifyAt    time.Duration `json:"notifyAt"`
 }
 
@@ -22,9 +22,9 @@ func (u UpdateEventDto) ToModel() model.Event {
 		ID:          u.ID,
 		UserID:      u.UserID,
 		Title:       u.Title,
+		Description: u.Description,
 		StartDt:     u.StartDt,
 		EndDt:       u.EndDt,
-		Description: u.Description,
 		NotifyAt:    u.NotifyAt,
 	}
 }
