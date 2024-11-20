@@ -9,7 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	pb "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/grpc/protobuf"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"google.golang.org/grpc"
@@ -17,7 +16,7 @@ import (
 )
 
 type Server struct {
-	conf              config.GrpcServerConf
+	conf              Config
 	grpcServerService pb.EventServiceServer
 	grpcServer        *grpc.Server
 }
@@ -31,7 +30,7 @@ type Logger interface {
 type Application interface { // TODO
 }
 
-func NewServer(conf config.GrpcServerConf, serviceServer pb.EventServiceServer) *Server {
+func NewServer(conf Config, serviceServer pb.EventServiceServer) *Server {
 	return &Server{
 		conf:              conf,
 		grpcServerService: serviceServer,

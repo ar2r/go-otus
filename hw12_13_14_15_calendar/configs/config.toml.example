@@ -3,7 +3,7 @@ env = "prod" # dev | prod
 debug = false
 storage = "memory" # memory | sql
 
-[rest]
+[http]
 host = ""
 port = 8080
 

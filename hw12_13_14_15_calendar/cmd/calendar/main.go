@@ -85,7 +85,7 @@ func main() {
 	serversWG.Add(2)
 
 	// REST httpServer
-	httpServer := internalhttp.NewServer(calendar, myConfig.RestServer)
+	httpServer := internalhttp.NewServer(calendar, myConfig.HttpServer)
 	logg.Info("HTTP server initialized")
 
 	go func() {

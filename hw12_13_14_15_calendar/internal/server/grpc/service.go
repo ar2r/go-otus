@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// Service Слой преобразования запроса pb в DTO и вызов сервис слоя.
 type Service struct {
 	pb.UnimplementedEventServiceServer
 	service services.EventServiceInterface
@@ -85,7 +86,7 @@ func (s *Service) Delete(ctx context.Context, request *pb.DeleteEventRequest) (*
 	return &pb.EmptyResponse{}, nil
 }
 
-func (s *Service) ListOnDate(ctx context.Context, interval *pb.ListByDateRequest) (*pb.ListResponse, error) {
+func (s *Service) ListByDate(ctx context.Context, interval *pb.ListByDateRequest) (*pb.ListResponse, error) {
 	dto := dto2.ListByDateDto{
 		Date: interval.GetDate().AsTime(),
 	}
@@ -96,7 +97,7 @@ func (s *Service) ListOnDate(ctx context.Context, interval *pb.ListByDateRequest
 	return s.listEventsToResponse(list), nil
 }
 
-func (s *Service) ListOnWeek(ctx context.Context, interval *pb.ListByDateRequest) (*pb.ListResponse, error) {
+func (s *Service) ListByWeek(ctx context.Context, interval *pb.ListByDateRequest) (*pb.ListResponse, error) {
 	dto := dto2.ListByDateDto{
 		Date: interval.GetDate().AsTime(),
 	}
@@ -107,7 +108,7 @@ func (s *Service) ListOnWeek(ctx context.Context, interval *pb.ListByDateRequest
 	return s.listEventsToResponse(list), nil
 }
 
-func (s *Service) ListOnMonth(ctx context.Context, interval *pb.ListByDateRequest) (*pb.ListResponse, error) {
+func (s *Service) ListByMonth(ctx context.Context, interval *pb.ListByDateRequest) (*pb.ListResponse, error) {
 	dto := dto2.ListByDateDto{Date: interval.GetDate().AsTime()}
 	list, err := s.service.ListByMonth(ctx, dto)
 	if err != nil {

@@ -1,6 +1,6 @@
-package config
+package database
 
-type DatabaseConf struct {
+type Config struct {
 	Host              string `toml:"host"`
 	Port              int    `toml:"port"`
 	Database          string `toml:"database"`

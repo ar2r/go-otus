@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/google/uuid"
 )
@@ -25,7 +24,7 @@ type Application interface {
 	DeleteEvent(ctx context.Context, id uuid.UUID) error
 }
 
-func NewServer(app *app.App, conf config.RestServerConf) *Server {
+func NewServer(app *app.App, conf Config) *Server {
 	return &Server{
 		app: app,
 		httpServer: &http.Server{

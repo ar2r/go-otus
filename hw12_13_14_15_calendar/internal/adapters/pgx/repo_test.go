@@ -6,10 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/database"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/pkg/easylog"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -17,7 +15,7 @@ import (
 func setupTestDB(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	ctx := context.Background()
-	conf := config.DatabaseConf{
+	conf := database.Config{
 		Username:          "calendar",
 		Password:          "calendar-pwd",
 		Host:              "localhost",
@@ -28,9 +26,7 @@ func setupTestDB(t *testing.T) *pgxpool.Pool {
 		TargetSessionAttr: "read-write",
 	}
 
-	log := easylog.New("debug", "stdout", "")
-
-	pool, err := database.Connect(ctx, conf, log)
+	pool, err := database.Connect(ctx, conf)
 	if err != nil {
 		t.Fatalf("Unable to connect to database: %v", err)
 	}

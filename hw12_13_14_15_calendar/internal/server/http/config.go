@@ -1,6 +1,6 @@
-package config
+package httpserver
 
-type RestServerConf struct {
+type Config struct {
 	Host string `toml:"host"`
 	Port int    `toml:"port"`
 }
