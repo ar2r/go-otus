@@ -51,13 +51,13 @@ func main() {
 	}
 
 	myConfig, err := config.LoadConfig(configFile)
+
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to load config: %v\n", err)
 		os.Exit(1)
 	}
 
 	logg = initLogger(myConfig.Logger)
-	app.SetLogger(logg)
 
 	if flag.Arg(0) == "migrate" {
 		if err := MigrateRun(logg, myConfig.Database, true); err != nil {
@@ -91,7 +91,7 @@ func main() {
 	serversWG.Add(2)
 
 	// REST httpServer
-	httpServer := internalhttp.NewServer(calendar, myConfig.HTTPServer)
+	httpServer := internalhttp.NewServer(calendar, logg, myConfig.HTTPServer)
 	logg.Info("HTTP server initialized")
 
 	go func() {

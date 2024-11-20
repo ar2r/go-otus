@@ -2,16 +2,11 @@ package httpserver
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
 	"time"
 )
 
-type MiddlewareLogger interface {
-	Info(msg string, attrs ...slog.Attr)
-}
-
-func loggingMiddleware(next http.Handler, logg MiddlewareLogger) http.Handler {
+func loggingMiddleware(next http.Handler, logg ServerLogger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		rr := &responseRecorder{w, http.StatusOK, 0}

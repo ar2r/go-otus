@@ -9,13 +9,13 @@ import (
 )
 
 type App struct {
-	Logger         *slog.Logger
+	logg           *slog.Logger
 	userRepository model.EventRepository
 }
 
 func New(logg *slog.Logger, repo model.EventRepository) *App {
 	return &App{
-		Logger:         logg,
+		logg:           logg,
 		userRepository: repo,
 	}
 }

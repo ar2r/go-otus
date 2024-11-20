@@ -70,6 +70,5 @@ func (s *Server) Stop(ctx context.Context) error {
 	if s.grpcServer != nil {
 		s.grpcServer.GracefulStop()
 	}
-	// logg.Info("HTTP server stopped")
 	return nil
 }

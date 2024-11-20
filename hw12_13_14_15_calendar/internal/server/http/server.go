@@ -3,24 +3,23 @@ package httpserver
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/google/uuid"
 )
 
 // Server HTTP сервер для обработки REST запросов.
 type Server struct {
-	app        *app.App
+	app        Application
 	httpServer *http.Server
 	logg       ServerLogger
 }
 
 type ServerLogger interface {
-	Info(msg string, attrs ...slog.Attr)
+	Info(msg string, attrs ...interface{})
+	Error(msg string, attrs ...interface{})
 }
 
 // Application интерфейс для работы с событиями.
@@ -30,9 +29,10 @@ type Application interface {
 	DeleteEvent(ctx context.Context, id uuid.UUID) error
 }
 
-func NewServer(app *app.App, conf Config) *Server {
+func NewServer(app Application, logg ServerLogger, conf Config) *Server {
 	return &Server{
-		app: app,
+		app:  app,
+		logg: logg,
 		httpServer: &http.Server{
 			Addr:        fmt.Sprintf("%s:%d", conf.Host, conf.Port),
 			ReadTimeout: 10 * time.Second,
@@ -42,32 +42,32 @@ func NewServer(app *app.App, conf Config) *Server {
 }
 
 func (s *Server) Start(ctx context.Context) error {
-	s.app.Logger.Info("Starting HTTP server...")
+	s.logg.Info("Starting HTTP server...")
 	s.registerLogger(s.registerRoutes())
 
 	go func() {
 		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			s.app.Logger.Error("HTTP server ListenAndServe: " + err.Error())
+			s.logg.Error("HTTP server ListenAndServe: " + err.Error())
 		}
 	}()
 
-	s.app.Logger.Info("HTTP Waiting ctx done")
+	s.logg.Info("HTTP Waiting ctx done")
 	<-ctx.Done()
 	return s.Stop(ctx)
 }
 
 func (s *Server) Stop(ctx context.Context) error {
-	s.app.Logger.Info("Stopping HTTP server...")
+	s.logg.Info("Stopping HTTP server...")
 
 	shutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	if err := s.httpServer.Shutdown(shutdownCtx); err != nil {
-		s.app.Logger.Error("HTTP server Shutdown: " + err.Error())
+		s.logg.Error("HTTP server Shutdown: " + err.Error())
 		return err
 	}
 
-	s.app.Logger.Info("HTTP server stopped")
+	s.logg.Info("HTTP server stopped")
 	return nil
 }
 
