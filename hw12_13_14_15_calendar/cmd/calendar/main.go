@@ -36,10 +36,6 @@ func init() {
 	)
 }
 
-func GetLogger() *slog.Logger {
-	return logg
-}
-
 func main() {
 	ctx := context.Background()
 	flag.Parse()
@@ -73,7 +69,7 @@ func main() {
 	}
 
 	// Application
-	calendar := app.New(logg, eventRepo)
+	calendar := app.New(eventRepo)
 	logg.Info("App initialized")
 
 	// Signal handler
@@ -81,15 +77,11 @@ func main() {
 	defer cancel()
 	logg.Info("Signal handler initialized")
 
-	/**
-	 *
-	 * Start httpServer listeners
-	 *
-	 */
+	// Servers
 	serversWG := sync.WaitGroup{}
 	serversWG.Add(2)
 
-	// REST httpServer
+	// REST server
 	httpServer := internalhttp.NewServer(calendar, logg, myConfig.HTTPServer)
 	logg.Info("HTTP server initialized")
 
@@ -103,7 +95,7 @@ func main() {
 		}
 	}()
 
-	// GRPC httpServer
+	// GRPC server
 	grpcServerService := grpcserver.NewService(calendar)
 	grpcServer := grpcserver.NewServer(logg, myConfig.GRPCServer, grpcServerService)
 	logg.Info("GRPC server initialized")

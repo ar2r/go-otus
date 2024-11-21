@@ -2,14 +2,12 @@ package app
 
 import (
 	"context"
-	"log/slog"
 
 	dto2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/dto"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 )
 
 type App struct {
-	logg       *slog.Logger
 	repository model.EventRepository
 }
 
@@ -22,9 +20,8 @@ type IApplication interface {
 	ListByMonth(ctx context.Context, dto dto2.ListByDateDto) ([]model.Event, error)
 }
 
-func New(logg *slog.Logger, repo model.EventRepository) *App {
+func New(repo model.EventRepository) *App {
 	return &App{
-		logg:       logg,
 		repository: repo,
 	}
 }
