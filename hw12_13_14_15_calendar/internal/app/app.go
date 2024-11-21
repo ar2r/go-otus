@@ -7,6 +7,8 @@ import (
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 )
 
+//go:generate mockgen -source=app.go -destination=mocks/app.go -package=mocks
+
 type App struct {
 	repository model.EventRepository
 }
@@ -28,18 +30,14 @@ func New(repo model.EventRepository) *App {
 
 // CreateEvent Создание события.
 func (a *App) CreateEvent(ctx context.Context, dto dto2.CreateEventDto) (model.Event, error) {
-	e := dto.ToModel()
-	err := e.GenerateID()
-	if err != nil {
-		return model.Event{}, err
-	}
-	return a.repository.Add(ctx, e)
+	m := dto.ToModel()
+	return a.repository.Add(ctx, m)
 }
 
 // UpdateEvent Обновление события.
 func (a *App) UpdateEvent(ctx context.Context, dto dto2.UpdateEventDto) (model.Event, error) {
-	um := dto.ToModel()
-	return a.repository.Update(ctx, um)
+	m := dto.ToModel()
+	return a.repository.Update(ctx, m)
 }
 
 // DeleteEvent Удаление события.

@@ -44,6 +44,7 @@ generate:
 	   --go-grpc_out internal/server/grpc/protobuf \
 	   --go-grpc_opt paths=source_relative \
 	   ./api/*.proto
+	go generate ./...
 
 migrate: build
 	$(BIN) -config ./configs/config.toml migrate

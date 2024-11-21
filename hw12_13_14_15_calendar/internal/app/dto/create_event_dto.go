@@ -17,7 +17,9 @@ type CreateEventDto struct {
 }
 
 func (d *CreateEventDto) ToModel() model.Event {
+	id, _ := uuid.NewV7()
 	return model.Event{
+		ID:          id,
 		UserID:      d.UserID,
 		Title:       d.Title,
 		Description: d.Description,
