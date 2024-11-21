@@ -26,7 +26,9 @@ version: build
 	$(BIN) version
 
 test:
-	go test -race ./internal/...
+	# Если тесты запускаются с TZ=UTC или TZ="", происходит какая-то странная магия. Подробности в пул реквесте.
+	# Поэтому запускаем тесты с TZ=Europe/Moscow 🤬
+	TZ=Europe/Moscow go test -race ./internal/...
 
 install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.62.0
