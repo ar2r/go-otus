@@ -18,7 +18,6 @@ import (
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/http"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/services"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/pkg/easylog"
 )
 
@@ -105,8 +104,7 @@ func main() {
 	}()
 
 	// GRPC httpServer
-	service := services.NewEventService(eventRepo)
-	grpcServerService := grpcserver.NewService(service)
+	grpcServerService := grpcserver.NewService(calendar)
 	grpcServer := grpcserver.NewServer(logg, myConfig.GRPCServer, grpcServerService)
 	logg.Info("GRPC server initialized")
 
@@ -123,11 +121,14 @@ func main() {
 	go func() {
 		<-ctx.Done()
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+		ctx, cancel = context.WithTimeout(context.Background(), time.Second*3)
 		defer cancel()
 		if err := httpServer.Stop(ctx); err != nil {
 			logg.Error("failed to stop HTTP server: " + err.Error())
 		}
+
+		ctx, cancel = context.WithTimeout(context.Background(), time.Second*3)
+		defer cancel()
 		if err := grpcServer.Stop(ctx); err != nil {
 			logg.Error("failed to stop GRPC server: " + err.Error())
 		}

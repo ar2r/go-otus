@@ -3,33 +3,34 @@ package grpcserver
 import (
 	"context"
 
-	internalDto "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/dto"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
+	dto2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/dto"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	pb "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/grpc/protobuf"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/services"
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/google/uuid"
 )
 
-// EventService Слой преобразования запроса pb в DTO и вызов сервис слоя приложения.
+// EventService Слой преобразования запроса pb в DTO и вызов сервис слоя приложения (Application).
 type EventService struct {
 	pb.UnimplementedEventServiceServer
-	service services.EventServiceInterface
+	app app.IApplication
 }
 
-func NewService(service services.EventServiceInterface) pb.EventServiceServer {
+func NewService(app app.IApplication) pb.EventServiceServer {
 	return &EventService{
-		service: service,
+		app: app,
 	}
 }
 
+// Create Создание события.
 func (s *EventService) Create(ctx context.Context, event *pb.Event) (*pb.EventDataResponse, error) {
 	userID, err := uuid.Parse(event.GetUserId())
 	if err != nil {
 		return nil, err
 	}
-	dto := internalDto.CreateEventDto{
+	dto := dto2.CreateEventDto{
 		UserID:      userID,
 		Title:       event.GetTitle(),
 		StartDt:     event.GetStartDt().AsTime(),
@@ -37,7 +38,7 @@ func (s *EventService) Create(ctx context.Context, event *pb.Event) (*pb.EventDa
 		Description: event.GetDescription(),
 		NotifyAt:    event.GetNotifyAt().AsDuration(),
 	}
-	add, err := s.service.Add(ctx, dto)
+	add, err := s.app.CreateEvent(ctx, dto)
 	if err != nil {
 		return nil, err
 	}
@@ -45,6 +46,7 @@ func (s *EventService) Create(ctx context.Context, event *pb.Event) (*pb.EventDa
 	return &pb.EventDataResponse{Event: event}, nil
 }
 
+// Update Обновление события.
 func (s *EventService) Update(ctx context.Context, event *pb.Event) (*pb.EventDataResponse, error) {
 	id, err := uuid.Parse(event.GetId())
 	if err != nil {
@@ -54,7 +56,7 @@ func (s *EventService) Update(ctx context.Context, event *pb.Event) (*pb.EventDa
 	if err != nil {
 		return nil, err
 	}
-	dto := internalDto.UpdateEventDto{
+	dto := dto2.UpdateEventDto{
 		ID:          id,
 		Title:       event.GetTitle(),
 		StartDt:     event.GetStartDt().AsTime(),
@@ -63,7 +65,7 @@ func (s *EventService) Update(ctx context.Context, event *pb.Event) (*pb.EventDa
 		UserID:      userID,
 		NotifyAt:    event.GetNotifyAt().AsDuration(),
 	}
-	add, err := s.service.Update(ctx, dto)
+	add, err := s.app.UpdateEvent(ctx, dto)
 	if err != nil {
 		return nil, err
 	}
@@ -71,52 +73,54 @@ func (s *EventService) Update(ctx context.Context, event *pb.Event) (*pb.EventDa
 	return &pb.EventDataResponse{Event: event}, nil
 }
 
+// Delete Удаление события.
 func (s *EventService) Delete(ctx context.Context, request *pb.DeleteEventRequest) (*pb.EmptyResponse, error) {
 	id, err := uuid.Parse(request.GetId())
 	if err != nil {
 		return nil, err
 	}
-	dto := internalDto.DeleteEventDto{
-		ID: id,
-	}
-	err = s.service.Delete(ctx, dto)
-	if err != nil {
+	dto := dto2.DeleteEventDto{ID: id}
+	if err = s.app.DeleteEvent(ctx, dto); err != nil {
 		return nil, err
 	}
 	return &pb.EmptyResponse{}, nil
 }
 
+// ListByDate Получение списка событий на дату.
 func (s *EventService) ListByDate(ctx context.Context, interval *pb.ListByDateRequest) (*pb.ListResponse, error) {
-	dto := internalDto.ListByDateDto{
+	dto := dto2.ListByDateDto{
 		Date: interval.GetDate().AsTime(),
 	}
-	list, err := s.service.ListByDate(ctx, dto)
+	list, err := s.app.ListByDate(ctx, dto)
 	if err != nil {
 		return nil, err
 	}
 	return s.listEventsToResponse(list), nil
 }
 
+// ListByWeek Получение списка событий на неделю.
 func (s *EventService) ListByWeek(ctx context.Context, interval *pb.ListByDateRequest) (*pb.ListResponse, error) {
-	dto := internalDto.ListByDateDto{
+	dto := dto2.ListByDateDto{
 		Date: interval.GetDate().AsTime(),
 	}
-	list, err := s.service.ListByWeek(ctx, dto)
+	list, err := s.app.ListByWeek(ctx, dto)
 	if err != nil {
 		return nil, err
 	}
 	return s.listEventsToResponse(list), nil
 }
 
+// ListByMonth Получение списка событий на месяц.
 func (s *EventService) ListByMonth(ctx context.Context, interval *pb.ListByDateRequest) (*pb.ListResponse, error) {
-	dto := internalDto.ListByDateDto{Date: interval.GetDate().AsTime()}
-	list, err := s.service.ListByMonth(ctx, dto)
+	dto := dto2.ListByDateDto{Date: interval.GetDate().AsTime()}
+	list, err := s.app.ListByMonth(ctx, dto)
 	if err != nil {
 		return nil, err
 	}
 	return s.listEventsToResponse(list), nil
 }
 
+// listEventsToResponse Преобразование списка событий в ответ.
 func (s *EventService) listEventsToResponse(list []model.Event) *pb.ListResponse {
 	response := make([]*pb.Event, 0, len(list))
 	for _, event := range list {

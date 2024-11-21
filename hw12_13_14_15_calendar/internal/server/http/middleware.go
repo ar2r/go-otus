@@ -9,7 +9,7 @@ import (
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server"
 )
 
-func loggingMiddleware(next http.Handler, logg ServerLogger) http.Handler {
+func loggingMiddleware(next http.Handler, logg IServerLogger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		rr := &responseRecorder{w, http.StatusOK, 0}

@@ -1,7 +1,7 @@
 package server
 
-// Interface Контракт сервера.
-type Interface interface {
+// IServer Контракт сервера.
+type IServer interface {
 	Run() error
 	Stop() error
 }

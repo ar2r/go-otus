@@ -4,38 +4,63 @@ import (
 	"context"
 	"log/slog"
 
+	dto2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/dto"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
-	"github.com/google/uuid"
 )
 
 type App struct {
-	logg           *slog.Logger
-	userRepository model.EventRepository
+	logg       *slog.Logger
+	repository model.EventRepository
+}
+
+type IApplication interface {
+	CreateEvent(ctx context.Context, dto dto2.CreateEventDto) (model.Event, error)
+	UpdateEvent(ctx context.Context, dto dto2.UpdateEventDto) (model.Event, error)
+	DeleteEvent(ctx context.Context, dto dto2.DeleteEventDto) error
+	ListByDate(ctx context.Context, dto dto2.ListByDateDto) ([]model.Event, error)
+	ListByWeek(ctx context.Context, dto dto2.ListByDateDto) ([]model.Event, error)
+	ListByMonth(ctx context.Context, dto dto2.ListByDateDto) ([]model.Event, error)
 }
 
 func New(logg *slog.Logger, repo model.EventRepository) *App {
 	return &App{
-		logg:           logg,
-		userRepository: repo,
+		logg:       logg,
+		repository: repo,
 	}
 }
 
-func (a *App) CreateEvent(ctx context.Context, e model.Event) error {
-	if _, err := a.userRepository.Add(ctx, e); err != nil {
-		return err
+// CreateEvent Создание события.
+func (a *App) CreateEvent(ctx context.Context, dto dto2.CreateEventDto) (model.Event, error) {
+	e := dto.ToModel()
+	err := e.GenerateID()
+	if err != nil {
+		return model.Event{}, err
 	}
-
-	return nil
+	return a.repository.Add(ctx, e)
 }
 
-func (a *App) GetEvent(ctx context.Context, id uuid.UUID) (model.Event, error) {
-	return a.userRepository.Get(ctx, id)
+// UpdateEvent Обновление события.
+func (a *App) UpdateEvent(ctx context.Context, dto dto2.UpdateEventDto) (model.Event, error) {
+	um := dto.ToModel()
+	return a.repository.Update(ctx, um)
 }
 
-func (a *App) UpdateEvent(ctx context.Context, ev model.Event) (model.Event, error) {
-	return a.userRepository.Update(ctx, ev)
+// DeleteEvent Удаление события.
+func (a *App) DeleteEvent(ctx context.Context, dto dto2.DeleteEventDto) error {
+	return a.repository.Delete(ctx, dto.ID)
 }
 
-func (a *App) DeleteEvent(ctx context.Context, id uuid.UUID) error {
-	return a.userRepository.Delete(ctx, id)
+// ListByDate Получение списка событий на дату.
+func (a *App) ListByDate(ctx context.Context, dto dto2.ListByDateDto) ([]model.Event, error) {
+	return a.repository.ListByDate(ctx, dto.Date)
+}
+
+// ListByWeek Получение списка событий на неделю.
+func (a *App) ListByWeek(ctx context.Context, dto dto2.ListByDateDto) ([]model.Event, error) {
+	return a.repository.ListByWeek(ctx, dto.Date)
+}
+
+// ListByMonth Получение списка событий за месяц.
+func (a *App) ListByMonth(ctx context.Context, dto dto2.ListByDateDto) ([]model.Event, error) {
+	return a.repository.ListByMonth(ctx, dto.Date)
 }

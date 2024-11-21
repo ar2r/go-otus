@@ -6,30 +6,22 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
-	"github.com/google/uuid"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 )
 
 // Server HTTP сервер для обработки REST запросов.
 type Server struct {
-	app        Application
+	app        app.IApplication
+	logg       IServerLogger
 	httpServer *http.Server
-	logg       ServerLogger
 }
 
-type ServerLogger interface {
+type IServerLogger interface {
 	Info(msg string, attrs ...interface{})
 	Error(msg string, attrs ...interface{})
 }
 
-// Application интерфейс для работы с событиями.
-type Application interface {
-	CreateEvent(ctx context.Context, e model.Event) error
-	GetEvent(ctx context.Context, id uuid.UUID) (model.Event, error)
-	DeleteEvent(ctx context.Context, id uuid.UUID) error
-}
-
-func NewServer(app Application, logg ServerLogger, conf Config) *Server {
+func NewServer(app app.IApplication, logg IServerLogger, conf Config) *Server {
 	return &Server{
 		app:  app,
 		logg: logg,
@@ -78,7 +70,7 @@ func (s *Server) registerRoutes() *http.ServeMux {
 	})
 
 	mux.HandleFunc("POST /events", s.createEventHandler)
-	mux.HandleFunc("GET /events/{id}", s.getEventHandler)
+	mux.HandleFunc("PUT /events/{id}", s.updateEventHandler)
 	mux.HandleFunc("DELETE /events/{id}", s.deleteEventHandler)
 	return mux
 }

@@ -36,6 +36,7 @@ message ListByDateRequest {
   google.protobuf.Timestamp date = 1;
 }
 
+// todo: Избавиться от этого враппера
 // Response
 message EventDataResponse {
   Event event = 1;
@@ -43,6 +44,7 @@ message EventDataResponse {
 
 message EmptyResponse {}
 
+// todo: Переименовать в EventList
 message ListResponse {
   repeated Event events = 1;
 }
