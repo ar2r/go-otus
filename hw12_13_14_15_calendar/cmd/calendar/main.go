@@ -107,7 +107,7 @@ func main() {
 	// GRPC httpServer
 	service := services.NewEventService(eventRepo)
 	grpcServerService := grpcserver.NewService(service)
-	grpcServer := grpcserver.NewServer(myConfig.GRPCServer, grpcServerService)
+	grpcServer := grpcserver.NewServer(logg, myConfig.GRPCServer, grpcServerService)
 	logg.Info("GRPC server initialized")
 
 	go func() {

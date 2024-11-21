@@ -6,7 +6,6 @@ import (
 	"log"
 	"log/slog"
 	"net"
-	"os"
 	"time"
 
 	pb "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/grpc/protobuf"
@@ -19,15 +18,17 @@ type Server struct {
 	conf              Config
 	grpcServerService pb.EventServiceServer
 	grpcServer        *grpc.Server
+	logg              *slog.Logger
 }
 
 type Application interface { // TODO
 }
 
-func NewServer(conf Config, serviceServer pb.EventServiceServer) *Server {
+func NewServer(logg *slog.Logger, conf Config, serviceServer pb.EventServiceServer) *Server {
 	return &Server{
 		conf:              conf,
 		grpcServerService: serviceServer,
+		logg:              logg,
 	}
 }
 
@@ -43,20 +44,17 @@ func (s *Server) Run() error {
 	if err != nil {
 		return err
 	}
-	opts := []logging.Option{
-		logging.WithLogOnEvents(logging.StartCall, logging.FinishCall),
-	}
-	logg := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{}))
+
 	s.grpcServer = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			logging.UnaryServerInterceptor(InterceptorLogger(logg), opts...),
+			CustomLoggingInterceptor(s.logg),
 		),
 	)
 
 	pb.RegisterEventServiceServer(s.grpcServer, s.grpcServerService)
 	reflection.Register(s.grpcServer) // Включил для отладки
 
-	logg.Info(fmt.Sprintf("grpc server started on %s", lsn.Addr().String()))
+	s.logg.Info(fmt.Sprintf("grpc server started on %s", lsn.Addr().String()))
 	if err := s.grpcServer.Serve(lsn); err != nil {
 		log.Fatal(err)
 	}

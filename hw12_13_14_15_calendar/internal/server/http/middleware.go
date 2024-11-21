@@ -2,8 +2,11 @@ package httpserver
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"time"
+
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server"
 )
 
 func loggingMiddleware(next http.Handler, logg ServerLogger) http.Handler {
@@ -12,8 +15,11 @@ func loggingMiddleware(next http.Handler, logg ServerLogger) http.Handler {
 		rr := &responseRecorder{w, http.StatusOK, 0}
 		next.ServeHTTP(rr, r)
 
-		clientIP := r.RemoteAddr
-		timestamp := start.Format("01/Jan/2000:23:59:59 +0300")
+		clientIP, _, _ := net.SplitHostPort(r.RemoteAddr)
+		if ip, err := server.NormalizeIPv4(clientIP); err == nil {
+			clientIP = ip
+		}
+		timestamp := start.Format("02/Jan/2006:15:04:05 -0700")
 		method := r.Method
 		path := r.URL.RequestURI()
 		protocol := r.Proto
