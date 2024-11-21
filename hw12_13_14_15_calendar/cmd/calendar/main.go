@@ -18,7 +18,7 @@ import (
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/http"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/pkg/easylog"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/pkg/myslog"
 )
 
 var (
@@ -151,7 +151,7 @@ func initRepository(ctx context.Context, myConfig *config.Config) (model.EventRe
 }
 
 func initLogger(loggerConf config.LoggerConfig) *slog.Logger {
-	return easylog.New(
+	return myslog.New(
 		loggerConf.Level,
 		loggerConf.Channel,
 		loggerConf.Filename,

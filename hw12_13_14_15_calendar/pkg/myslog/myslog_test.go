@@ -1,4 +1,4 @@
-package easylog
+package myslog
 
 import (
 	"bytes"
