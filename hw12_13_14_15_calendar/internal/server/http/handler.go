@@ -15,12 +15,13 @@ func (s *Server) createEventHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := s.app.CreateEvent(r.Context(), reqDto); err != nil {
+	createdEvent, err := s.app.CreateEvent(r.Context(), reqDto)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(createdEvent)
 }
 
 func (s *Server) updateEventHandler(w http.ResponseWriter, r *http.Request) {
