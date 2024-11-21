@@ -74,6 +74,10 @@ func (s *Server) registerRoutes() *http.ServeMux {
 	mux.HandleFunc("POST /events", s.createEventHandler)
 	mux.HandleFunc("PUT /events/{id}", s.updateEventHandler)
 	mux.HandleFunc("DELETE /events/{id}", s.deleteEventHandler)
+	mux.HandleFunc("GET /events/day", s.listByDateHandler)
+	mux.HandleFunc("GET /events/week", s.listByWeekHandler)
+	mux.HandleFunc("GET /events/month", s.listByMonthHandler)
+
 	return mux
 }
 
