@@ -13,7 +13,7 @@ type MockLogger struct {
 	logs []string
 }
 
-func (m *MockLogger) Log(level slog.Level, msg string, attrs ...interface{}) {
+func (m *MockLogger) Log(_ slog.Level, msg string, _ ...interface{}) {
 	m.logs = append(m.logs, msg)
 }
 

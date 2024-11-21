@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -74,8 +75,8 @@ func TestHandler(t *testing.T) {
 			},
 			expectedCode: http.StatusOK,
 			expectedBody: func() string {
-				responseJson, _ := json.Marshal(createdEvent)
-				return string(responseJson)
+				responseJSON, _ := json.Marshal(createdEvent)
+				return string(responseJSON)
 			}(),
 		},
 		{
@@ -90,8 +91,8 @@ func TestHandler(t *testing.T) {
 			},
 			expectedCode: http.StatusOK,
 			expectedBody: func() string {
-				responseJson, _ := json.Marshal(updatedEvent)
-				return string(responseJson)
+				responseJSON, _ := json.Marshal(updatedEvent)
+				return string(responseJSON)
 			}(),
 		},
 		{
@@ -111,8 +112,9 @@ func TestHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			requestBody, _ := json.Marshal(tt.requestDto)
-			req, _ := http.NewRequest(tt.method, tt.url, bytes.NewBuffer(requestBody))
+			req, _ := http.NewRequestWithContext(context.Background(), tt.method, tt.url, bytes.NewBuffer(requestBody))
 			rr := httptest.NewRecorder()
 			tt.mockCall()
 			mux.ServeHTTP(rr, req)
@@ -142,8 +144,7 @@ func TestHandler_listEvents(t *testing.T) {
 		},
 	}
 
-	responseJson, _ := json.Marshal(events)
-
+	responseJSON, _ := json.Marshal(events)
 	mockApp := mock_app.NewMockIApplication(ctrl)
 	server := &Server{app: mockApp}
 	mux := server.registerRoutes()
@@ -182,13 +183,14 @@ func TestHandler_listEvents(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req, _ := http.NewRequest("GET", tt.url, bytes.NewBuffer(requestBody))
+			t.Parallel()
+			req, _ := http.NewRequestWithContext(context.Background(), "GET", tt.url, bytes.NewBuffer(requestBody))
 			rr := httptest.NewRecorder()
 			tt.mockMethod()
 			mux.ServeHTTP(rr, req)
 
 			assert.Equal(t, tt.expectedStatus, rr.Code)
-			assert.Equal(t, string(responseJson), strings.TrimSpace(rr.Body.String()))
+			assert.Equal(t, string(responseJSON), strings.TrimSpace(rr.Body.String()))
 		})
 	}
 }

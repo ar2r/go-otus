@@ -46,7 +46,6 @@ func main() {
 	}
 
 	myConfig, err := config.LoadConfig(configFile)
-
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to load config: %v\n", err)
 		os.Exit(1)
