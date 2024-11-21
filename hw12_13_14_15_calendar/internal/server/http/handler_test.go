@@ -112,7 +112,6 @@ func TestHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			requestBody, _ := json.Marshal(tt.requestDto)
 			req, _ := http.NewRequestWithContext(context.Background(), tt.method, tt.url, bytes.NewBuffer(requestBody))
 			rr := httptest.NewRecorder()
@@ -183,7 +182,6 @@ func TestHandler_listEvents(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
 			req, _ := http.NewRequestWithContext(context.Background(), "GET", tt.url, bytes.NewBuffer(requestBody))
 			rr := httptest.NewRecorder()
 			tt.mockMethod()
