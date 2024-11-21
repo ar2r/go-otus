@@ -206,6 +206,7 @@ func (x *ListByDateRequest) GetDate() *timestamppb.Timestamp {
 	return nil
 }
 
+// todo: Избавиться от этого враппера
 // Response
 type EventDataResponse struct {
 	state         protoimpl.MessageState
@@ -288,6 +289,7 @@ func (*EmptyResponse) Descriptor() ([]byte, []int) {
 	return file_EventService_proto_rawDescGZIP(), []int{4}
 }
 
+// todo: Переименовать в EventList
 type ListResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
