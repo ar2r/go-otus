@@ -15,14 +15,11 @@ import (
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestHandler(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockApp := mock_app.NewMockIApplication(ctrl)
+	mockApp := mock_app.NewIApplication(t)
 	server := &Server{app: mockApp}
 	mux := server.registerRoutes()
 
@@ -69,8 +66,9 @@ func TestHandler(t *testing.T) {
 			url:        "/events",
 			requestDto: createEvenDto,
 			mockCall: func() {
-				mockApp.EXPECT().
-					CreateEvent(gomock.Any(), createEvenDto).
+				mockApp.
+					On("CreateEvent", mock.Anything, createEvenDto).
+					Once().
 					Return(createdEvent, nil)
 			},
 			expectedCode: http.StatusOK,
@@ -85,8 +83,9 @@ func TestHandler(t *testing.T) {
 			url:        "/events/" + updateEventDto.ID.String(),
 			requestDto: updateEventDto,
 			mockCall: func() {
-				mockApp.EXPECT().
-					UpdateEvent(gomock.Any(), updateEventDto).
+				mockApp.
+					On("UpdateEvent", mock.Anything, updateEventDto).
+					Once().
 					Return(updatedEvent, nil)
 			},
 			expectedCode: http.StatusOK,
@@ -101,8 +100,9 @@ func TestHandler(t *testing.T) {
 			url:        "/events/" + deleteEventDto.ID.String(),
 			requestDto: deleteEventDto,
 			mockCall: func() {
-				mockApp.EXPECT().
-					DeleteEvent(gomock.Any(), deleteEventDto).
+				mockApp.
+					On("DeleteEvent", mock.Anything, deleteEventDto).
+					Once().
 					Return(nil)
 			},
 			expectedCode: http.StatusNoContent,
@@ -125,9 +125,6 @@ func TestHandler(t *testing.T) {
 }
 
 func TestHandler_listEvents(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	requestDto := dto.ListByDateDto{Date: time.Now().Truncate(time.Second)}
 	requestBody, _ := json.Marshal(requestDto)
 
@@ -144,7 +141,7 @@ func TestHandler_listEvents(t *testing.T) {
 	}
 
 	responseJSON, _ := json.Marshal(events)
-	mockApp := mock_app.NewMockIApplication(ctrl)
+	mockApp := mock_app.NewIApplication(t)
 	server := &Server{app: mockApp}
 	mux := server.registerRoutes()
 
@@ -158,7 +155,10 @@ func TestHandler_listEvents(t *testing.T) {
 			name: "listByDate",
 			url:  "/events/day",
 			mockMethod: func() {
-				mockApp.EXPECT().ListByDate(gomock.Any(), requestDto).Return(events, nil)
+				mockApp.
+					On("ListByDate", mock.Anything, requestDto).
+					Once().
+					Return(events, nil)
 			},
 			expectedStatus: http.StatusOK,
 		},
@@ -166,7 +166,10 @@ func TestHandler_listEvents(t *testing.T) {
 			name: "listByWeek",
 			url:  "/events/week",
 			mockMethod: func() {
-				mockApp.EXPECT().ListByWeek(gomock.Any(), requestDto).Return(events, nil)
+				mockApp.
+					On("ListByWeek", mock.Anything, requestDto).
+					Once().
+					Return(events, nil)
 			},
 			expectedStatus: http.StatusOK,
 		},
@@ -174,7 +177,10 @@ func TestHandler_listEvents(t *testing.T) {
 			name: "listByMonth",
 			url:  "/events/month",
 			mockMethod: func() {
-				mockApp.EXPECT().ListByMonth(gomock.Any(), requestDto).Return(events, nil)
+				mockApp.
+					On("ListByMonth", mock.Anything, requestDto).
+					Once().
+					Return(events, nil)
 			},
 			expectedStatus: http.StatusOK,
 		},

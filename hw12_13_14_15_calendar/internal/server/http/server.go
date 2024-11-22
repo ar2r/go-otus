@@ -9,8 +9,6 @@ import (
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 )
 
-//go:generate mockgen -source=server.go -destination=mocks/server.go
-
 // Server HTTP сервер для обработки REST запросов.
 type Server struct {
 	app        app.IApplication
@@ -18,6 +16,9 @@ type Server struct {
 	httpServer *http.Server
 }
 
+// IServerLogger интерфейс для логгера сервера.
+//
+//go:generate go run github.com/vektra/mockery/v2@v2.49.0 --name=IServerLogger
 type IServerLogger interface {
 	Info(msg string, attrs ...interface{})
 	Error(msg string, attrs ...interface{})

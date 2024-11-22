@@ -7,12 +7,11 @@ import (
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 )
 
-//go:generate mockgen -source=app.go -destination=mocks/app.go
-
 type App struct {
 	repository model.EventRepository
 }
 
+//go:generate go run github.com/vektra/mockery/v2@v2.49.0 --name=IApplication
 type IApplication interface {
 	CreateEvent(ctx context.Context, dto dto2.CreateEventDto) (model.Event, error)
 	UpdateEvent(ctx context.Context, dto dto2.UpdateEventDto) (model.Event, error)
