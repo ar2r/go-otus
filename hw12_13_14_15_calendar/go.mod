@@ -5,10 +5,9 @@ go 1.23.3
 require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/golang-migrate/migrate/v4 v4.18.1
-	github.com/golang/protobuf v1.5.4
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0
-	github.com/jackc/pgx/v5 v5.5.5
+	github.com/jackc/pgx/v5 v5.7.1
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.35.2

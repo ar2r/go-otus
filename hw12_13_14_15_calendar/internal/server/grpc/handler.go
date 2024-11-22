@@ -7,9 +7,9 @@ import (
 	dto2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/dto"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	pb "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/grpc/protobuf"
-	"github.com/golang/protobuf/ptypes/duration"
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // EventService Слой преобразования запроса pb в DTO и вызов сервис слоя приложения (Application).
@@ -46,11 +46,11 @@ func (s *EventService) Create(ctx context.Context, event *pb.CreateEventRequest)
 	return &pb.EventResponse{
 		Id:          createdEvent.ID.String(),
 		Title:       createdEvent.Title,
-		StartDt:     &timestamp.Timestamp{Seconds: createdEvent.StartDt.Unix()},
-		EndDt:       &timestamp.Timestamp{Seconds: createdEvent.EndDt.Unix()},
+		StartDt:     &timestamppb.Timestamp{Seconds: createdEvent.StartDt.Unix()},
+		EndDt:       &timestamppb.Timestamp{Seconds: createdEvent.EndDt.Unix()},
 		Description: &createdEvent.Description,
 		UserId:      createdEvent.UserID.String(),
-		NotifyAt:    &duration.Duration{Seconds: int64(createdEvent.NotifyAt)},
+		NotifyAt:    &durationpb.Duration{Seconds: int64(createdEvent.NotifyAt)},
 	}, nil
 }
 
@@ -81,11 +81,11 @@ func (s *EventService) Update(ctx context.Context, event *pb.UpdateEventRequest)
 	return &pb.EventResponse{
 		Id:          updatedEvent.ID.String(),
 		Title:       updatedEvent.Title,
-		StartDt:     &timestamp.Timestamp{Seconds: updatedEvent.StartDt.Unix()},
-		EndDt:       &timestamp.Timestamp{Seconds: updatedEvent.EndDt.Unix()},
+		StartDt:     &timestamppb.Timestamp{Seconds: updatedEvent.StartDt.Unix()},
+		EndDt:       &timestamppb.Timestamp{Seconds: updatedEvent.EndDt.Unix()},
 		Description: &updatedEvent.Description,
 		UserId:      updatedEvent.UserID.String(),
-		NotifyAt:    &duration.Duration{Seconds: int64(updatedEvent.NotifyAt)},
+		NotifyAt:    &durationpb.Duration{Seconds: int64(updatedEvent.NotifyAt)},
 	}, nil
 }
 
@@ -143,11 +143,11 @@ func (s *EventService) listEventsToResponse(list []model.Event) *pb.EventListRes
 		response = append(response, &pb.EventResponse{
 			Id:          event.ID.String(),
 			Title:       event.Title,
-			StartDt:     &timestamp.Timestamp{Seconds: event.StartDt.Unix()},
-			EndDt:       &timestamp.Timestamp{Seconds: event.EndDt.Unix()},
+			StartDt:     &timestamppb.Timestamp{Seconds: event.StartDt.Unix()},
+			EndDt:       &timestamppb.Timestamp{Seconds: event.EndDt.Unix()},
 			Description: &event.Description,
 			UserId:      event.UserID.String(),
-			NotifyAt:    &duration.Duration{Seconds: int64(event.NotifyAt)},
+			NotifyAt:    &durationpb.Duration{Seconds: int64(event.NotifyAt)},
 		})
 	}
 	return &pb.EventListResponse{
