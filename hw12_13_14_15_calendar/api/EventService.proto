@@ -8,16 +8,25 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
 service EventService {
-  rpc Create(Event) returns (EventDataResponse);
-  rpc Update(Event) returns (EventDataResponse);
+  rpc Create(CreateEventRequest) returns (EventResponse);
+  rpc Update(UpdateEventRequest) returns (EventResponse);
   rpc Delete(DeleteEventRequest) returns (EmptyResponse);
 
-  rpc ListByDate(ListByDateRequest) returns (ListResponse);
-  rpc ListByWeek(ListByDateRequest) returns (ListResponse);
-  rpc ListByMonth(ListByDateRequest) returns (ListResponse);
+  rpc ListByDate(ListByDateRequest) returns (EventListResponse);
+  rpc ListByWeek(ListByDateRequest) returns (EventListResponse);
+  rpc ListByMonth(ListByDateRequest) returns (EventListResponse);
 }
 
-message Event {
+message CreateEventRequest {
+  string user_id = 2;
+  string title = 3;
+  optional string description = 4;
+  google.protobuf.Timestamp start_dt = 5;
+  google.protobuf.Timestamp end_dt = 6;
+  optional google.protobuf.Duration notify_at = 7;
+}
+
+message UpdateEventRequest {
   string id = 1;
   string user_id = 2;
   string title = 3;
@@ -36,16 +45,20 @@ message ListByDateRequest {
   google.protobuf.Timestamp date = 1;
 }
 
-// todo: Избавиться от этого враппера
 // Response
-message EventDataResponse {
-  Event event = 1;
-}
-
 message EmptyResponse {}
 
-// todo: Переименовать в EventList
-message ListResponse {
-  repeated Event events = 1;
+message EventResponse {
+  string id = 1;
+  string user_id = 2;
+  string title = 3;
+  optional string description = 4;
+  google.protobuf.Timestamp start_dt = 5;
+  google.protobuf.Timestamp end_dt = 6;
+  optional google.protobuf.Duration notify_at = 7;
+}
+
+message EventListResponse {
+  repeated EventResponse events = 1;
 }
 

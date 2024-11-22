@@ -7,7 +7,7 @@ import (
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 )
 
-//go:generate mockgen -source=app.go -destination=mocks/app_mock.go -package=app
+//go:generate mockgen -source=app.go -destination=mocks/app.go
 
 type App struct {
 	repository model.EventRepository

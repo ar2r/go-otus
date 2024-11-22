@@ -1,6 +1,6 @@
 package server
 
-//go:generate mockgen -source=interface.go -destination=mocks/server_mock.go -package=server
+//go:generate mockgen -source=interface.go -destination=mocks/interface.go
 
 // IServer Контракт сервера.
 type IServer interface {

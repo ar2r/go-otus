@@ -1,3 +1,5 @@
+//go:build !ci
+
 package sqlstorage
 
 import (
@@ -35,7 +37,6 @@ func setupTestDB(t *testing.T) *pgxpool.Pool {
 }
 
 func TestStorage_Add(t *testing.T) {
-	t.Skip("Skipping TestStorage_Add")
 	pool := setupTestDB(t)
 
 	e := model.Event{

@@ -28,7 +28,7 @@ version: build
 test:
 	# Если тесты запускаются с TZ=UTC или TZ="", происходит какая-то странная магия. Подробности в пул реквесте.
 	# Поэтому запускаем тесты с TZ=Europe/Moscow 🤬
-	TZ=Europe/Moscow go test -race ./internal/...
+	TZ=Europe/Moscow go test -v -race -tags=ci ./internal/...
 
 install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.62.0
@@ -46,7 +46,7 @@ generate:
 	   --go-grpc_out internal/server/grpc/protobuf \
 	   --go-grpc_opt paths=source_relative \
 	   ./api/*.proto
-	go generate ./...
+	go generate -v ./...
 
 migrate: build
 	$(BIN) -config ./configs/config.toml migrate

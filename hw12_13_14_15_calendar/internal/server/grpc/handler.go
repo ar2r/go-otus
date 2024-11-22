@@ -25,7 +25,7 @@ func NewService(app app.IApplication) pb.EventServiceServer {
 }
 
 // Create Создание события.
-func (s *EventService) Create(ctx context.Context, event *pb.Event) (*pb.EventDataResponse, error) {
+func (s *EventService) Create(ctx context.Context, event *pb.CreateEventRequest) (*pb.EventResponse, error) {
 	userID, err := uuid.Parse(event.GetUserId())
 	if err != nil {
 		return nil, err
@@ -38,16 +38,24 @@ func (s *EventService) Create(ctx context.Context, event *pb.Event) (*pb.EventDa
 		Description: event.GetDescription(),
 		NotifyAt:    event.GetNotifyAt().AsDuration(),
 	}
-	add, err := s.app.CreateEvent(ctx, dto)
+	createdEvent, err := s.app.CreateEvent(ctx, dto)
 	if err != nil {
 		return nil, err
 	}
-	event.Id = add.ID.String()
-	return &pb.EventDataResponse{Event: event}, nil
+
+	return &pb.EventResponse{
+		Id:          createdEvent.ID.String(),
+		Title:       createdEvent.Title,
+		StartDt:     &timestamp.Timestamp{Seconds: createdEvent.StartDt.Unix()},
+		EndDt:       &timestamp.Timestamp{Seconds: createdEvent.EndDt.Unix()},
+		Description: &createdEvent.Description,
+		UserId:      createdEvent.UserID.String(),
+		NotifyAt:    &duration.Duration{Seconds: int64(createdEvent.NotifyAt)},
+	}, nil
 }
 
 // Update Обновление события.
-func (s *EventService) Update(ctx context.Context, event *pb.Event) (*pb.EventDataResponse, error) {
+func (s *EventService) Update(ctx context.Context, event *pb.UpdateEventRequest) (*pb.EventResponse, error) {
 	id, err := uuid.Parse(event.GetId())
 	if err != nil {
 		return nil, err
@@ -65,12 +73,20 @@ func (s *EventService) Update(ctx context.Context, event *pb.Event) (*pb.EventDa
 		UserID:      userID,
 		NotifyAt:    event.GetNotifyAt().AsDuration(),
 	}
-	add, err := s.app.UpdateEvent(ctx, dto)
+	updatedEvent, err := s.app.UpdateEvent(ctx, dto)
 	if err != nil {
 		return nil, err
 	}
-	event.Id = add.ID.String()
-	return &pb.EventDataResponse{Event: event}, nil
+
+	return &pb.EventResponse{
+		Id:          updatedEvent.ID.String(),
+		Title:       updatedEvent.Title,
+		StartDt:     &timestamp.Timestamp{Seconds: updatedEvent.StartDt.Unix()},
+		EndDt:       &timestamp.Timestamp{Seconds: updatedEvent.EndDt.Unix()},
+		Description: &updatedEvent.Description,
+		UserId:      updatedEvent.UserID.String(),
+		NotifyAt:    &duration.Duration{Seconds: int64(updatedEvent.NotifyAt)},
+	}, nil
 }
 
 // Delete Удаление события.
@@ -87,7 +103,7 @@ func (s *EventService) Delete(ctx context.Context, request *pb.DeleteEventReques
 }
 
 // ListByDate Получение списка событий на дату.
-func (s *EventService) ListByDate(ctx context.Context, interval *pb.ListByDateRequest) (*pb.ListResponse, error) {
+func (s *EventService) ListByDate(ctx context.Context, interval *pb.ListByDateRequest) (*pb.EventListResponse, error) {
 	dto := dto2.ListByDateDto{
 		Date: interval.GetDate().AsTime(),
 	}
@@ -99,7 +115,7 @@ func (s *EventService) ListByDate(ctx context.Context, interval *pb.ListByDateRe
 }
 
 // ListByWeek Получение списка событий на неделю.
-func (s *EventService) ListByWeek(ctx context.Context, interval *pb.ListByDateRequest) (*pb.ListResponse, error) {
+func (s *EventService) ListByWeek(ctx context.Context, interval *pb.ListByDateRequest) (*pb.EventListResponse, error) {
 	dto := dto2.ListByDateDto{
 		Date: interval.GetDate().AsTime(),
 	}
@@ -111,7 +127,7 @@ func (s *EventService) ListByWeek(ctx context.Context, interval *pb.ListByDateRe
 }
 
 // ListByMonth Получение списка событий на месяц.
-func (s *EventService) ListByMonth(ctx context.Context, interval *pb.ListByDateRequest) (*pb.ListResponse, error) {
+func (s *EventService) ListByMonth(ctx context.Context, interval *pb.ListByDateRequest) (*pb.EventListResponse, error) {
 	dto := dto2.ListByDateDto{Date: interval.GetDate().AsTime()}
 	list, err := s.app.ListByMonth(ctx, dto)
 	if err != nil {
@@ -121,10 +137,10 @@ func (s *EventService) ListByMonth(ctx context.Context, interval *pb.ListByDateR
 }
 
 // listEventsToResponse Преобразование списка событий в ответ.
-func (s *EventService) listEventsToResponse(list []model.Event) *pb.ListResponse {
-	response := make([]*pb.Event, 0, len(list))
+func (s *EventService) listEventsToResponse(list []model.Event) *pb.EventListResponse {
+	response := make([]*pb.EventResponse, 0, len(list))
 	for _, event := range list {
-		response = append(response, &pb.Event{
+		response = append(response, &pb.EventResponse{
 			Id:          event.ID.String(),
 			Title:       event.Title,
 			StartDt:     &timestamp.Timestamp{Seconds: event.StartDt.Unix()},
@@ -134,7 +150,7 @@ func (s *EventService) listEventsToResponse(list []model.Event) *pb.ListResponse
 			NotifyAt:    &duration.Duration{Seconds: int64(event.NotifyAt)},
 		})
 	}
-	return &pb.ListResponse{
+	return &pb.EventListResponse{
 		Events: response,
 	}
 }

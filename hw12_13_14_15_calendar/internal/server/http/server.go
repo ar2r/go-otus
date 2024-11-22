@@ -9,7 +9,7 @@ import (
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 )
 
-//go:generate mockgen -source=server.go -destination=mocks/server_mock.go -package=httpserver
+//go:generate mockgen -source=server.go -destination=mocks/server.go
 
 // Server HTTP сервер для обработки REST запросов.
 type Server struct {
