@@ -93,7 +93,7 @@ func main() {
 	// Graceful shutdown
 	go func() {
 		<-ctx.Done()
-		err = s.StopJobs(
+		err = s.StopJobs()
 		if err != nil {
 			logg.Error("Failed to stop jobs: ", err)
 		}
