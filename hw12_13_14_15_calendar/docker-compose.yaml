@@ -38,31 +38,31 @@ services:
       - postgres
     restart: unless-stopped
 
-# Проверяет список дел в календаре и создает задание на отправку уведомления
-#  scheduler:
-#    build:
-#      context: .
-#      dockerfile: .devenv/scheduler/Dockerfile
-#    container_name: scheduler
-#    volumes:
-#      - .:/app
-#    ports:
-#      - "8081:8081"
-#    depends_on:
-#      - postgres
-#      - rabbitmq
-#    restart: unless-stopped
-#
-# Как-то отправляет уведомление пользователю
-#  sender:
-#    build:
-#      context: .
-#      dockerfile: .devenv/sender/Dockerfile
-#    container_name: sender
-#    volumes:
-#      - .:/app
-#    ports:
-#      - "8082:8082"
-#    depends_on:
-#      - postgres
-#    restart: unless-stopped
+  # Проверяет список дел в календаре и создает задание на отправку уведомления
+  scheduler:
+    build:
+      context: .
+      dockerfile: .devenv/scheduler/Dockerfile
+    container_name: scheduler
+    volumes:
+      - .:/app
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+      - rabbitmq
+    restart: unless-stopped
+
+  # Как-то отправляет уведомление пользователю
+  sender:
+    build:
+      context: .
+      dockerfile: .devenv/sender/Dockerfile
+    container_name: sender
+    volumes:
+      - .:/app
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres
+    restart: unless-stopped
