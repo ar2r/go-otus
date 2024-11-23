@@ -1,6 +1,6 @@
-package config
+package grpcserver
 
-type ServerConf struct {
+type Config struct {
 	Host string `toml:"host"`
 	Port int    `toml:"port"`
 }

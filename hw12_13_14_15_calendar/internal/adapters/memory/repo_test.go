@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model/event"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/google/uuid"
 )
 
 var ctx = context.Background()
 
-func equal(a, b []event.Event) bool {
+func equal(a, b []model.Event) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -31,7 +31,7 @@ func TestStorage(t *testing.T) {
 	tests := []struct {
 		name      string
 		operation func(s *Storage) error
-		expected  []event.Event
+		expected  []model.Event
 	}{
 		{
 			name: "Add event",
@@ -39,7 +39,7 @@ func TestStorage(t *testing.T) {
 				s.Add(ctx, e)
 				return nil
 			},
-			expected: []event.Event{e},
+			expected: []model.Event{e},
 		},
 		{
 			name: "Delete event",
@@ -47,7 +47,7 @@ func TestStorage(t *testing.T) {
 				s.Add(ctx, e)
 				return s.Delete(ctx, e.ID)
 			},
-			expected: []event.Event{},
+			expected: []model.Event{},
 		},
 		{
 			name: "Delete non-existent event",
@@ -55,7 +55,7 @@ func TestStorage(t *testing.T) {
 				id, _ := uuid.NewV7()
 				return s.Delete(ctx, id)
 			},
-			expected: []event.Event{},
+			expected: []model.Event{},
 		},
 	}
 
@@ -108,7 +108,7 @@ func TestUpdate(t *testing.T) {
 	tests := []struct {
 		name      string
 		operation func() error
-		expected  []event.Event
+		expected  []model.Event
 	}{
 		{
 			name: "Update item",
@@ -118,7 +118,7 @@ func TestUpdate(t *testing.T) {
 				_, err := memStorage.Update(ctx, e2)
 				return err
 			},
-			expected: []event.Event{e2},
+			expected: []model.Event{e2},
 		},
 		{
 			name: "Update non-existent item",
@@ -128,7 +128,7 @@ func TestUpdate(t *testing.T) {
 				_, err := memStorage.Update(ctx, event)
 				return err
 			},
-			expected: []event.Event{},
+			expected: []model.Event{},
 		},
 	}
 
@@ -159,17 +159,17 @@ func TestListByDate(t *testing.T) {
 	tests := []struct {
 		name     string
 		date     time.Time
-		expected []event.Event
+		expected []model.Event
 	}{
 		{
 			name:     "List existing event",
 			date:     start,
-			expected: []event.Event{e1},
+			expected: []model.Event{e1},
 		},
 		{
 			name:     "List non-existing event",
 			date:     start.Add(24 * time.Hour),
-			expected: []event.Event{},
+			expected: []model.Event{},
 		},
 	}
 
@@ -198,25 +198,25 @@ func TestListByPeriod(t *testing.T) {
 		name     string
 		startDt  time.Time
 		endDt    time.Time
-		expected []event.Event
+		expected []model.Event
 	}{
 		{
 			name:     "List overlapping event",
 			startDt:  start.Add(-1 * time.Hour),
 			endDt:    start.Add(1 * time.Hour),
-			expected: []event.Event{e},
+			expected: []model.Event{e},
 		},
 		{
 			name:     "List non-overlapping event",
 			startDt:  start.Add(3 * time.Hour),
 			endDt:    start.Add(4 * time.Hour),
-			expected: []event.Event{},
+			expected: []model.Event{},
 		},
 		{
 			name:     "List event within range",
 			startDt:  start,
 			endDt:    end,
-			expected: []event.Event{e},
+			expected: []model.Event{e},
 		},
 	}
 
@@ -242,17 +242,17 @@ func TestListByWeek(t *testing.T) {
 	tests := []struct {
 		name     string
 		date     time.Time
-		expected []event.Event
+		expected []model.Event
 	}{
 		{
 			name:     "List events in the same week",
 			date:     start,
-			expected: []event.Event{e},
+			expected: []model.Event{e},
 		},
 		{
 			name:     "List events in a different week",
 			date:     start.AddDate(0, 0, 7),
-			expected: []event.Event{},
+			expected: []model.Event{},
 		},
 	}
 
@@ -278,17 +278,17 @@ func TestListByMonth(t *testing.T) {
 	tests := []struct {
 		name     string
 		date     time.Time
-		expected []event.Event
+		expected []model.Event
 	}{
 		{
 			name:     "List event in the same month",
 			date:     start,
-			expected: []event.Event{e},
+			expected: []model.Event{e},
 		},
 		{
 			name:     "List event in a different month",
 			date:     start.AddDate(0, 1, 0),
-			expected: []event.Event{},
+			expected: []model.Event{},
 		},
 	}
 
@@ -302,7 +302,7 @@ func TestListByMonth(t *testing.T) {
 	}
 }
 
-func createStubEvent(name string, startDt time.Time, endDt time.Time) event.Event {
+func createStubEvent(name string, startDt time.Time, endDt time.Time) model.Event {
 	eventID, _ := uuid.NewV7()
 	userID, _ := uuid.NewV7()
 	if startDt.IsZero() {
@@ -311,13 +311,13 @@ func createStubEvent(name string, startDt time.Time, endDt time.Time) event.Even
 	if endDt.IsZero() {
 		endDt = startDt.Add(time.Hour)
 	}
-	return event.Event{
+	return model.Event{
 		ID:          eventID,
 		Title:       name,
 		StartDt:     startDt,
 		EndDt:       endDt,
 		Description: "description",
 		UserID:      userID,
-		Notify:      time.Second,
+		NotifyAt:    time.Second,
 	}
 }

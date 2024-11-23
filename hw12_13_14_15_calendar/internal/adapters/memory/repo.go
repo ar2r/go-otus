@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model/event"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/google/uuid"
 )
 
@@ -24,7 +24,7 @@ func (s *Storage) CreateEvent(ctx context.Context, userID uuid.UUID, id uuid.UUI
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	event := event.Event{
+	event := model.Event{
 		ID:      id,
 		Title:   title,
 		StartDt: time.Now(),
@@ -46,30 +46,30 @@ func (s *Storage) CreateEvent(ctx context.Context, userID uuid.UUID, id uuid.UUI
 }
 
 // Get Вернуть событие по идентификатору.
-func (s *Storage) Get(_ context.Context, id uuid.UUID) (*event.Event, error) {
+func (s *Storage) Get(_ context.Context, id uuid.UUID) (model.Event, error) {
 	if v, exists := s.items.Load(id); exists {
-		return v.(*event.Event), nil
+		return v.(model.Event), nil
 	}
-	return nil, adapters.ErrNotFound
+	return model.Event{}, adapters.ErrNotFound
 }
 
 // Add Добавить событие.
-func (s *Storage) Add(_ context.Context, e event.Event) (*event.Event, error) {
+func (s *Storage) Add(_ context.Context, e model.Event) (model.Event, error) {
 	s.items.Store(e.ID, e)
 	v, _ := s.items.Load(e.ID)
-	result := v.(event.Event)
-	return &result, nil
+	result := v.(model.Event)
+	return result, nil
 }
 
 // Update Обновить событие.
-func (s *Storage) Update(_ context.Context, e event.Event) (*event.Event, error) {
+func (s *Storage) Update(_ context.Context, e model.Event) (model.Event, error) {
 	if _, exists := s.items.Load(e.ID); !exists {
-		return nil, adapters.ErrNotFound
+		return model.Event{}, adapters.ErrNotFound
 	}
 	s.items.Store(e.ID, e)
 	v, _ := s.items.Load(e.ID)
-	result := v.(event.Event)
-	return &result, nil
+	result := v.(model.Event)
+	return result, nil
 }
 
 // Delete Удалить событие.
@@ -79,24 +79,24 @@ func (s *Storage) Delete(_ context.Context, id uuid.UUID) error {
 }
 
 // List Вернуть все события.
-func (s *Storage) List(_ context.Context) ([]event.Event, error) {
-	foundItems := make([]event.Event, 0)
+func (s *Storage) List(_ context.Context) ([]model.Event, error) {
+	foundItems := make([]model.Event, 0)
 	s.items.Range(func(_, value any) bool {
-		foundItems = append(foundItems, value.(event.Event))
+		foundItems = append(foundItems, value.(model.Event))
 		return true
 	})
 	return foundItems, nil
 }
 
 // ListByDate Найти все события, которые происходят в указанный день.
-func (s *Storage) ListByDate(_ context.Context, start time.Time) ([]event.Event, error) {
+func (s *Storage) ListByDate(_ context.Context, start time.Time) ([]model.Event, error) {
 	// Обнулить у даты часы минуты секунды
 	startOfDay := time.Date(start.Year(), start.Month(), start.Day(), 0, 0, 0, 0, time.Local).Add(-1 * time.Nanosecond)
 	endOfDay := time.Date(start.Year(), start.Month(), start.Day()+1, 0, 0, 0, 0, time.Local)
 
-	foundItems := make([]event.Event, 0)
+	foundItems := make([]model.Event, 0)
 	s.items.Range(func(_, value any) bool {
-		v := value.(event.Event)
+		v := value.(model.Event)
 		if v.StartDt.Before(endOfDay) && v.EndDt.After(startOfDay) {
 			foundItems = append(foundItems, v)
 		}
@@ -106,13 +106,13 @@ func (s *Storage) ListByDate(_ context.Context, start time.Time) ([]event.Event,
 }
 
 // ListByPeriod Найти события, которые пересекается с указанным временным промежутком.
-func (s *Storage) ListByPeriod(_ context.Context, startDt time.Time, endDt time.Time) ([]event.Event, error) {
+func (s *Storage) ListByPeriod(_ context.Context, startDt time.Time, endDt time.Time) ([]model.Event, error) {
 	startDt = startDt.Add(-1 * time.Nanosecond)
 	endDt = endDt.Add(1 * time.Nanosecond)
 
-	foundItems := make([]event.Event, 0)
+	foundItems := make([]model.Event, 0)
 	s.items.Range(func(_, value any) bool {
-		v := value.(event.Event)
+		v := value.(model.Event)
 		if v.StartDt.Before(endDt) && v.EndDt.After(startDt) {
 			foundItems = append(foundItems, v)
 		}
@@ -123,7 +123,7 @@ func (s *Storage) ListByPeriod(_ context.Context, startDt time.Time, endDt time.
 
 // ListByWeek Найти все события, которые происходят в указанной неделе.
 // Неделя начинается с понедельника.
-func (s *Storage) ListByWeek(ctx context.Context, startDt time.Time) ([]event.Event, error) {
+func (s *Storage) ListByWeek(ctx context.Context, startDt time.Time) ([]model.Event, error) {
 	startOfWeek := startDt.AddDate(0, 0, -int(startDt.Weekday()))
 	endOfWeek := startOfWeek.AddDate(0, 0, 7)
 
@@ -132,7 +132,7 @@ func (s *Storage) ListByWeek(ctx context.Context, startDt time.Time) ([]event.Ev
 
 // ListByMonth Найти все события, которые происходят в указанном месяце.
 // Месяц начинается с первого числа.
-func (s *Storage) ListByMonth(ctx context.Context, startDt time.Time) ([]event.Event, error) {
+func (s *Storage) ListByMonth(ctx context.Context, startDt time.Time) ([]model.Event, error) {
 	startOfMonth := time.Date(startDt.Year(), startDt.Month(), 1, 0, 0, 0, 0, time.Local)
 	endOfMonth := startOfMonth.AddDate(0, 1, 0)
 

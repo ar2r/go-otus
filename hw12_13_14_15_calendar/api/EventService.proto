@@ -1,7 +1,64 @@
 syntax = "proto3";
 
-package event;
+package pb;
 
-message Event {
-    // TODO
+option go_package = "./;grpcprotobuf";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+service EventService {
+  rpc Create(CreateEventRequest) returns (EventResponse);
+  rpc Update(UpdateEventRequest) returns (EventResponse);
+  rpc Delete(DeleteEventRequest) returns (EmptyResponse);
+
+  rpc ListByDate(ListByDateRequest) returns (EventListResponse);
+  rpc ListByWeek(ListByDateRequest) returns (EventListResponse);
+  rpc ListByMonth(ListByDateRequest) returns (EventListResponse);
 }
+
+message CreateEventRequest {
+  string user_id = 2;
+  string title = 3;
+  optional string description = 4;
+  google.protobuf.Timestamp start_dt = 5;
+  google.protobuf.Timestamp end_dt = 6;
+  optional google.protobuf.Duration notify_at = 7;
+}
+
+message UpdateEventRequest {
+  string id = 1;
+  string user_id = 2;
+  string title = 3;
+  optional string description = 4;
+  google.protobuf.Timestamp start_dt = 5;
+  google.protobuf.Timestamp end_dt = 6;
+  optional google.protobuf.Duration notify_at = 7;
+}
+
+// Request
+message DeleteEventRequest {
+  string id = 1;
+}
+
+message ListByDateRequest {
+  google.protobuf.Timestamp date = 1;
+}
+
+// Response
+message EmptyResponse {}
+
+message EventResponse {
+  string id = 1;
+  string user_id = 2;
+  string title = 3;
+  optional string description = 4;
+  google.protobuf.Timestamp start_dt = 5;
+  google.protobuf.Timestamp end_dt = 6;
+  optional google.protobuf.Duration notify_at = 7;
+}
+
+message EventListResponse {
+  repeated EventResponse events = 1;
+}
+

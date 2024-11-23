@@ -19,17 +19,34 @@ build-img:
 run-img: build-img
 	docker run $(DOCKER_IMG)
 
+clean:
+	rm -rf $(BIN)
+
 version: build
 	$(BIN) version
 
 test:
-	go test -race ./internal/...
+	# Если тесты запускаются с TZ=UTC или TZ="", происходит какая-то странная магия. Подробности в пул реквесте.
+	# Поэтому запускаем тесты с TZ=Europe/Moscow 🤬
+	TZ=Europe/Moscow go test -v -race -tags=ci ./internal/...
 
 install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.62.0
 
 lint: install-lint-deps
 	golangci-lint run ./...
+
+generate:
+	rm -rf ./internal/server/grpc/protobuf
+	mkdir -p ./internal/server/grpc/protobuf
+
+	protoc -I ./api \
+	   --go_out internal/server/grpc/protobuf \
+	   --go_opt paths=source_relative \
+	   --go-grpc_out internal/server/grpc/protobuf \
+	   --go-grpc_opt paths=source_relative \
+	   ./api/*.proto
+	go generate -v ./...
 
 migrate: build
 	$(BIN) -config ./configs/config.toml migrate

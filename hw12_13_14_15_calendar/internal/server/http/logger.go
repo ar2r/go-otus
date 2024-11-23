@@ -1,19 +1,25 @@
-package internalhttp
+package httpserver
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"time"
+
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server"
 )
 
-func loggingMiddleware(next http.Handler, logg Logger) http.Handler {
+func loggingMiddleware(next http.Handler, logg IServerLogger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		rr := &responseRecorder{w, http.StatusOK, 0}
 		next.ServeHTTP(rr, r)
 
-		clientIP := r.RemoteAddr
-		timestamp := start.Format("01/Jan/2000:23:59:59 +0300")
+		clientIP, _, _ := net.SplitHostPort(r.RemoteAddr)
+		if ip, err := server.NormalizeIPv4(clientIP); err == nil {
+			clientIP = ip
+		}
+		timestamp := start.Format("02/Jan/2006:15:04:05 -0700")
 		method := r.Method
 		path := r.URL.RequestURI()
 		protocol := r.Proto
@@ -23,7 +29,7 @@ func loggingMiddleware(next http.Handler, logg Logger) http.Handler {
 
 		logMsg := fmt.Sprintf("%s [%s] %s %s %s %d %d \"%s\"",
 			clientIP, timestamp, method, path, protocol, statusCode, responseSize, userAgent)
-		logg.InfoRaw(logMsg)
+		logg.Info(logMsg)
 	})
 }
 

@@ -1,3 +1,5 @@
+//go:build !ci
+
 package sqlstorage
 
 import (
@@ -6,10 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/db"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/logger"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model/event"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/database"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -17,7 +17,7 @@ import (
 func setupTestDB(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	ctx := context.Background()
-	conf := config.DatabaseConf{
+	conf := database.Config{
 		Username:          "calendar",
 		Password:          "calendar-pwd",
 		Host:              "localhost",
@@ -28,9 +28,7 @@ func setupTestDB(t *testing.T) *pgxpool.Pool {
 		TargetSessionAttr: "read-write",
 	}
 
-	log := logger.New("debug", "stdout", "")
-
-	pool, err := db.Connect(ctx, conf, log)
+	pool, err := database.Connect(ctx, conf)
 	if err != nil {
 		t.Fatalf("Unable to connect to database: %v", err)
 	}
@@ -39,17 +37,16 @@ func setupTestDB(t *testing.T) *pgxpool.Pool {
 }
 
 func TestStorage_Add(t *testing.T) {
-	t.Skip("Skipping TestStorage_Add")
 	pool := setupTestDB(t)
 
-	e := event.Event{
+	e := model.Event{
 		ID:          uuid.New(),
 		Title:       "Test Event",
 		Description: "This is a test event",
 		StartDt:     time.Now(),
 		EndDt:       time.Now().Add(1 * time.Hour),
 		UserID:      uuid.Nil,
-		Notify:      time.Minute * 10,
+		NotifyAt:    time.Minute * 10,
 	}
 
 	type fields struct {
@@ -57,13 +54,13 @@ func TestStorage_Add(t *testing.T) {
 	}
 	type args struct {
 		ctx   context.Context
-		event event.Event
+		event model.Event
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		want    *event.Event
+		want    model.Event
 		wantErr bool
 	}{
 		{
@@ -75,14 +72,14 @@ func TestStorage_Add(t *testing.T) {
 				ctx:   context.Background(),
 				event: e,
 			},
-			want:    &e,
+			want:    e,
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Storage{
-				pgxPool: tt.fields.PgxPool,
+				conn: tt.fields.PgxPool,
 			}
 			got, err := s.Add(tt.args.ctx, tt.args.event)
 			if (err != nil) != tt.wantErr {

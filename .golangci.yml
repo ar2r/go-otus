@@ -21,6 +21,8 @@ linters-settings:
           - github.com/jackc/pgx
           - github.com/golang-migrate/migrate
           - github.com/BurntSushi/toml
+          - github.com/golang/protobuf
+          - github.com/grpc-ecosystem/go-grpc-middleware
       test:
         files:
           - "$test"
@@ -30,6 +32,9 @@ linters-settings:
           - github.com/ar2r/go-otus # my repo
           - github.com/jackc/pgx
           - github.com/google/uuid
+  lll:
+    line-length: 256
+    tab-width: 2
 
 issues:
   exclude-rules:
