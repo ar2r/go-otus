@@ -5,7 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/google/uuid"
 )
@@ -38,7 +37,7 @@ func (s *Storage) CreateEvent(ctx context.Context, userID uuid.UUID, id uuid.UUI
 	}
 
 	if len(foundEvents) > 0 {
-		return adapters.ErrDateBusy
+		return model.ErrDateBusy
 	}
 
 	_, err = s.Add(ctx, event)
@@ -50,7 +49,7 @@ func (s *Storage) Get(_ context.Context, id uuid.UUID) (model.Event, error) {
 	if v, exists := s.items.Load(id); exists {
 		return v.(model.Event), nil
 	}
-	return model.Event{}, adapters.ErrNotFound
+	return model.Event{}, model.ErrNotFound
 }
 
 // Add Добавить событие.
@@ -64,7 +63,7 @@ func (s *Storage) Add(_ context.Context, e model.Event) (model.Event, error) {
 // Update Обновить событие.
 func (s *Storage) Update(_ context.Context, e model.Event) (model.Event, error) {
 	if _, exists := s.items.Load(e.ID); !exists {
-		return model.Event{}, adapters.ErrNotFound
+		return model.Event{}, model.ErrNotFound
 	}
 	s.items.Store(e.ID, e)
 	v, _ := s.items.Load(e.ID)

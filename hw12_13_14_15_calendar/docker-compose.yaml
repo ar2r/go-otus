@@ -14,3 +14,55 @@ services:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    restart: unless-stopped
+
+  # rabbit mq latest version with web UI
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "15672:15672" # UI http://localhost:15672 (guest:guest)
+    restart: unless-stopped
+
+  calendar:
+    build:
+      context: .
+      dockerfile: .devenv/calendar/Dockerfile
+    container_name: calendar
+    volumes:
+      - .:/app
+    ports:
+      - "8080:8080" # REST http://localhost:8080
+      - "8090:8090" # GRPC http://localhost:8090
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+# Проверяет список дел в календаре и создает задание на отправку уведомления
+#  scheduler:
+#    build:
+#      context: .
+#      dockerfile: .devenv/scheduler/Dockerfile
+#    container_name: scheduler
+#    volumes:
+#      - .:/app
+#    ports:
+#      - "8081:8081"
+#    depends_on:
+#      - postgres
+#      - rabbitmq
+#    restart: unless-stopped
+#
+# Как-то отправляет уведомление пользователю
+#  sender:
+#    build:
+#      context: .
+#      dockerfile: .devenv/sender/Dockerfile
+#    container_name: sender
+#    volumes:
+#      - .:/app
+#    ports:
+#      - "8082:8082"
+#    depends_on:
+#      - postgres
+#    restart: unless-stopped

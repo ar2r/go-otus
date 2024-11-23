@@ -11,8 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	memorystorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters/memory"
-	sqlstorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters/pgx"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
@@ -31,7 +30,7 @@ func init() {
 	flag.StringVar(
 		&configFile,
 		"config",
-		"/etc/calendar/config.toml.example",
+		"/etc/calendar/config.toml",
 		"Path to configuration file",
 	)
 }
@@ -51,7 +50,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	logg = initLogger(myConfig.Logger)
+	logg = myslog.New(
+		myConfig.Logger.Level,
+		myConfig.Logger.Channel,
+		myConfig.Logger.Filename,
+	)
 
 	if flag.Arg(0) == "migrate" {
 		if err := MigrateRun(logg, myConfig.Database, true); err != nil {
@@ -61,7 +64,7 @@ func main() {
 	}
 
 	// Event EventRepository
-	eventRepo, err = initRepository(ctx, myConfig)
+	eventRepo, err = adapters.New(ctx, logg, myConfig)
 	if err != nil {
 		logg.Error("failed to create repository: " + err.Error())
 		return
@@ -128,32 +131,4 @@ func main() {
 
 	serversWG.Wait()
 	logg.Info("App shutdown!")
-}
-
-func initRepository(ctx context.Context, myConfig *config.Config) (model.EventRepository, error) {
-	var eventRepo model.EventRepository
-	var err error
-
-	switch myConfig.App.Storage {
-	case "memory":
-		eventRepo = memorystorage.New()
-		logg.Info("Memory adapters initialized")
-	case "sql":
-		eventRepo, err = sqlstorage.New(ctx, myConfig.Database, logg)
-		if err != nil {
-			return nil, fmt.Errorf("failed to initialize SQL storage: %w", err)
-		}
-		logg.Info("SQL adapters initialized")
-	default:
-		return nil, fmt.Errorf("invalid adapters type: %s", myConfig.App.Storage)
-	}
-	return eventRepo, nil
-}
-
-func initLogger(loggerConf config.LoggerConfig) *slog.Logger {
-	return myslog.New(
-		loggerConf.Level,
-		loggerConf.Channel,
-		loggerConf.Filename,
-	)
 }
