@@ -20,10 +20,12 @@ var (
 
 type IProducer interface {
 	Publish(routingKey string, body []byte) error
+	Close() error
 }
 
 type IConsumer interface {
 	Consume(chan string) error
+	Close() error
 }
 
 func NewProducer(

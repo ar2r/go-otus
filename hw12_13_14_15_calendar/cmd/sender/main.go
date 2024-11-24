@@ -48,6 +48,8 @@ func main() {
 		myConfig.Logger.Filename,
 	)
 
+	logg.Info("Sender is booting...")
+
 	// Signal handler
 	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	defer cancel()

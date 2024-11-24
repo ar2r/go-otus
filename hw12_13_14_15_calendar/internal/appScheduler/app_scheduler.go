@@ -37,25 +37,7 @@ func New(logg *slog.Logger, conf *config.Config, repo model.EventRepository, pro
 
 func (a *AppScheduler) Run(ctx context.Context) error {
 	task := gocron.NewTask(
-		func(queueConn queue.IProducer, routingKey string) {
-			events, err := a.repo.ListNotNotified(ctx)
-			if err != nil {
-				a.logg.Error("failed to get events: " + err.Error())
-				return
-			}
-			for _, event := range events {
-				eventJSON, err := json.Marshal(event)
-				if err != nil {
-					a.logg.Error("failed to marshal event: " + err.Error())
-					continue
-				}
-				if err := queueConn.Publish(routingKey, eventJSON); err != nil {
-					a.logg.Error("failed to publish message: " + err.Error())
-				}
-				event.NotificationSent = true
-				a.repo.Update(ctx, event)
-			}
-		},
+		a.produceNotification(ctx),
 		a.producer,
 		a.conf.RabbitMQ.RoutingKey,
 	)
@@ -63,7 +45,7 @@ func (a *AppScheduler) Run(ctx context.Context) error {
 	_, err := a.scheduler.NewJob(
 		gocron.CronJob("1/2 * * * * *", true),
 		task,
-		gocron.WithName("find-notify-events"),
+		gocron.WithName("notify"),
 		gocron.WithSingletonMode(gocron.LimitModeReschedule),
 	)
 	if err != nil {
@@ -73,6 +55,33 @@ func (a *AppScheduler) Run(ctx context.Context) error {
 	a.scheduler.Start()
 	a.logg.Info("Scheduler is running...")
 	return nil
+}
+
+func (a *AppScheduler) produceNotification(ctx context.Context) func(queueConn queue.IProducer, routingKey string) {
+	return func(queueConn queue.IProducer, routingKey string) {
+		events, err := a.repo.ListNotNotified(ctx)
+		if err != nil {
+			a.logg.Error("failed to get events: " + err.Error())
+			return
+		}
+		for _, event := range events {
+			eventJSON, err := json.Marshal(event)
+			if err != nil {
+				a.logg.Error("failed to marshal event: " + err.Error())
+				continue
+			}
+			if err = queueConn.Publish(routingKey, eventJSON); err != nil {
+				a.logg.Error("failed to publish message: " + err.Error())
+			}
+			event.NotificationSent = true
+
+			_, err = a.repo.Update(ctx, event)
+			if err != nil {
+				a.logg.Error("failed to update event: " + err.Error())
+			}
+			a.logg.Debug("Event has been sent to MQ: " + event.ID.String())
+		}
+	}
 }
 
 func (a *AppScheduler) Stop() error {

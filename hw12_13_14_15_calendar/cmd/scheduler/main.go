@@ -48,6 +48,8 @@ func main() {
 		myConfig.Logger.Filename,
 	)
 
+	logg.Info("Scheduler is booting...")
+
 	// Event EventRepository
 	eventRepo, err = adapters.New(ctx, logg, myConfig)
 	if err != nil {
@@ -82,6 +84,10 @@ func main() {
 	// Graceful shutdown
 	go func() {
 		<-ctx.Done()
+		err = producerConn.Close()
+		if err != nil {
+			logg.Error("failed to close producer connection: " + err.Error())
+		}
 		err = app.Stop()
 		if err != nil {
 			logg.Error("failed to stop cron jobs: " + err.Error())

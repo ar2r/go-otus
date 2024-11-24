@@ -14,7 +14,8 @@ services:
       - "8080:8080" # REST http://localhost:8080
       - "8090:8090" # GRPC http://localhost:8090
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   # Проверяет список дел в календаре и создает задание на отправку уведомления
@@ -28,8 +29,10 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
 
   # Как-то отправляет уведомление пользователю
@@ -43,7 +46,10 @@ services:
     ports:
       - "8082:8082"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     restart: unless-stopped
 
   postgres:
@@ -55,6 +61,11 @@ services:
       POSTGRES_DB: calendar
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U calendar" ]
+      interval: 3s
+      timeout: 5s
+      retries: 5
     ports:
       - "5432:5432"
     restart: unless-stopped
@@ -65,4 +76,9 @@ services:
     container_name: rabbitmq
     ports:
       - "15672:15672" # UI http://localhost:15672 (guest:guest)
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
+      interval: 3s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
