@@ -1,4 +1,7 @@
 BIN := "./bin/calendar"
+BIN_SCHEDULER := "./bin/scheduler"
+BIN_SENDER := "./bin/sender"
+
 DOCKER_IMG="calendar:develop"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
@@ -6,8 +9,11 @@ LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%d
 
 build:
 	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/calendar
+	go build -v -o $(BIN_SCHEDULER) -ldflags "$(LDFLAGS)" ./cmd/scheduler
+	go build -v -o $(BIN_SENDER) -ldflags "$(LDFLAGS)" ./cmd/sender
 
 run: build
+	# todo: Запускать в одном докер контейнере все три бинарника через nohup
 	$(BIN) -config ./configs/config.toml
 
 build-img:
@@ -21,6 +27,8 @@ run-img: build-img
 
 clean:
 	rm -rf $(BIN)
+	rm -rf $(BIN_SCHEDULER)
+	rm -rf $(BIN_SENDER)
 
 version: build
 	$(BIN) version
