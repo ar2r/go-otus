@@ -1,6 +1,6 @@
 BIN := "./bin/calendar"
-BIN_SCHEDULER := "./bin/scheduler"
-BIN_SENDER := "./bin/sender"
+BIN_SCHEDULER := "./bin/calendar_scheduler"
+BIN_SENDER := "./bin/calendar_sender"
 
 DOCKER_IMG="calendar:develop"
 
