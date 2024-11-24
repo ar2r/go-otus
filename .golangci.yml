@@ -23,6 +23,8 @@ linters-settings:
           - github.com/BurntSushi/toml
           - github.com/golang/protobuf
           - github.com/grpc-ecosystem/go-grpc-middleware
+          - github.com/streadway/amqp
+          - github.com/go-co-op/gocron/v2
       test:
         files:
           - "$test"

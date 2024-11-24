@@ -1,4 +1,4 @@
-package appScheduler
+package appscheduler
 
 import (
 	"context"

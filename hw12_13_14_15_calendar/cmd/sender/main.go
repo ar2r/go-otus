@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/appSender"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/appsender"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/pkg/myslog"
@@ -55,7 +55,7 @@ func main() {
 	defer cancel()
 
 	// App
-	app := appSender.New(logg, myConfig, eventRepo)
+	app := appsender.New(logg, myConfig, eventRepo)
 	err = app.Run()
 	if err != nil {
 		logg.Error("failed to run sender: " + err.Error())

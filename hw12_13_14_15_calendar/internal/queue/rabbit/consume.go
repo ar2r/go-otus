@@ -6,7 +6,7 @@ import (
 
 const ConsumerName = "calendar-consumer"
 
-// Consume returns a channel with messages from the queue
+// Consume returns a channel with messages from the queue.
 func (c *Client) Consume(messageCh chan<- string) error {
 	deliveries, err := c.channel.Consume(
 		c.conf.TopicName, // name
@@ -18,7 +18,7 @@ func (c *Client) Consume(messageCh chan<- string) error {
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("failed queue Consume: %c", err)
+		return fmt.Errorf("failed queue Consume: %w", err)
 	}
 
 	go func() {

@@ -1,7 +1,7 @@
 package rabbit
 
 type Config struct {
-	Uri string `toml:"uri"`
+	URI string `toml:"uri"`
 
 	ExchangeName string `toml:"exchange_name"`
 	ExchangeType string `toml:"exchange_type"`

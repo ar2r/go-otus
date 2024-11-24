@@ -71,7 +71,6 @@ func (s *Storage) Get(ctx context.Context, id uuid.UUID) (model.Event, error) {
 
 // Update Обновить событие.
 func (s *Storage) Update(ctx context.Context, event model.Event) (model.Event, error) {
-
 	_, err := s.conn.Exec(ctx,
 		"UPDATE events SET "+
 			" title = $1, description = $2, start_dt = $3, end_dt = $4, user_id = $5, notify_at = $6, notification_sent= $7"+

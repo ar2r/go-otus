@@ -20,14 +20,14 @@ func New(
 	conf Config,
 	doneCh chan error,
 ) (*Client, error) {
-	conn, err := amqp.Dial(conf.Uri)
+	conn, err := amqp.Dial(conf.URI)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect: %s", err)
+		return nil, fmt.Errorf("failed to connect: %w", err)
 	}
 
 	channel, err := conn.Channel()
 	if err != nil {
-		return nil, fmt.Errorf("failed to open channel: %s", err)
+		return nil, fmt.Errorf("failed to open channel: %w", err)
 	}
 
 	return &Client{
@@ -42,17 +42,17 @@ func New(
 func (c *Client) Close() error {
 	err := c.channel.Close()
 	if err != nil {
-		return fmt.Errorf("failed to close channel: %c", err)
+		return fmt.Errorf("failed to close channel: %w", err)
 	}
 
 	err = c.conn.Close()
 	if err != nil {
-		return fmt.Errorf("failed to close: %c", err)
+		return fmt.Errorf("failed to close: %w", err)
 	}
 	return nil
 }
 
-// RegisterOutboxExchange creates an exchange for outgoing messages
+// RegisterOutboxExchange creates an exchange for outgoing messages.
 func (c *Client) RegisterOutboxExchange() error {
 	if err := c.channel.ExchangeDeclare(
 		c.conf.ExchangeName,
@@ -63,13 +63,13 @@ func (c *Client) RegisterOutboxExchange() error {
 		false,
 		nil,
 	); err != nil {
-		return fmt.Errorf("failed exchange declare: %c", err)
+		return fmt.Errorf("failed exchange declare: %w", err)
 	}
 
 	return nil
 }
 
-// RegisterInboxQueue creates a queue for incoming messages
+// RegisterInboxQueue creates a queue for incoming messages.
 func (c *Client) RegisterInboxQueue() error {
 	queue, err := c.channel.QueueDeclare(
 		c.conf.TopicName,
@@ -80,7 +80,7 @@ func (c *Client) RegisterInboxQueue() error {
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("queue Declare: %c", err)
+		return fmt.Errorf("queue Declare: %w", err)
 	}
 
 	if err = c.channel.QueueBind(
@@ -90,7 +90,7 @@ func (c *Client) RegisterInboxQueue() error {
 		false,
 		nil,
 	); err != nil {
-		return fmt.Errorf("queue Bind: %c", err)
+		return fmt.Errorf("queue Bind: %w", err)
 	}
 
 	return nil

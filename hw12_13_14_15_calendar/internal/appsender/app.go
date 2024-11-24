@@ -1,4 +1,4 @@
-package appSender
+package appsender
 
 import (
 	"encoding/json"

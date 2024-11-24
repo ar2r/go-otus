@@ -8,7 +8,7 @@ type Service struct {
 	// some fields...
 }
 
-func NewService(logg *slog.Logger, conf Config) *Service {
+func NewService(logg *slog.Logger, _ Config) *Service {
 	logg.Error("kafka service connector not implemented")
 	return &Service{}
 }
