@@ -1,0 +1,39 @@
+[app]
+env = "prod" # dev | prod
+debug = false
+storage = "sql" # memory | sql
+queue = "rabbitmq"
+
+[http]
+host = ""
+port = 8080
+
+[grpc]
+host = ""
+port = 8090
+
+[logger]
+level = "debug" # debug | info | warn | error
+channel = "stdout" # stdout | stderr | file
+# file = "logs/calendar.log"
+
+[database]
+host = "postgres"
+port = 5432
+database = "calendar"
+username = "calendar"
+password = "calendar-pwd"
+schema = "public"
+ssl_mode = "disable"
+timezone = "Europe/Moscow"
+target_session_attr = "read-write"
+
+[rabbitmq]
+uri = "amqp://guest:guest@rabbitmq:5672"
+exchange_name = "calendar"
+exchange_type = "direct"
+routing_key = "event.notification.upcoming"
+topic_name = "calendar.notifications"
+
+[kafka]
+hosts = "localhost:111;localhost:222"
