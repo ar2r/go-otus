@@ -19,12 +19,10 @@ var (
 )
 
 type IProducer interface {
-	// Publish sends a message to the queue
 	Publish(routingKey string, body []byte) error
 }
 
 type IConsumer interface {
-	// Consume returns a channel with messages from the queue
 	Consume(chan string) error
 }
 
@@ -38,8 +36,7 @@ func NewProducer(
 			return nil, fmt.Errorf("failed to create rabbitmq producer: %w", err)
 		}
 
-		// Register exchange
-		if err := rabbitConn.RegisterOutboxExchange(); err != nil {
+		if err = rabbitConn.RegisterOutboxExchange(); err != nil {
 			return nil, fmt.Errorf("failed to register outbox exchange: %w", err)
 		}
 		return rabbitConn, nil

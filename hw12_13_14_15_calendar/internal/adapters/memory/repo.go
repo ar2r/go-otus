@@ -137,3 +137,15 @@ func (s *Storage) ListByMonth(ctx context.Context, startDt time.Time) ([]model.E
 
 	return s.ListByPeriod(ctx, startOfMonth, endOfMonth)
 }
+
+func (s *Storage) ListNotNotified(_ context.Context) ([]model.Event, error) {
+	foundItems := make([]model.Event, 0)
+	s.items.Range(func(_, value any) bool {
+		v := value.(model.Event)
+		if !v.NotificationSent && v.StartDt.Add(-v.NotifyAt).Before(time.Now()) {
+			foundItems = append(foundItems, v)
+		}
+		return true
+	})
+	return foundItems, nil
+}

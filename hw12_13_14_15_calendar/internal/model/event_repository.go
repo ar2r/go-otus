@@ -24,4 +24,5 @@ type lister interface {
 	ListByPeriod(ctx context.Context, startDt time.Time, endDt time.Time) ([]Event, error)
 	ListByWeek(ctx context.Context, startDt time.Time) ([]Event, error)
 	ListByMonth(ctx context.Context, startDt time.Time) ([]Event, error)
+	ListNotNotified(ctx context.Context) ([]Event, error)
 }

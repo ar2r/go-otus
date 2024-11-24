@@ -81,7 +81,7 @@ func main() {
 		<-ctx.Done()
 		err = s.StopJobs()
 		if err != nil {
-			logg.Error("Failed to stop jobs: ", err)
+			logg.Error("failed to stop jobs: " + err.Error())
 		}
 	}()
 	logg.Info("Scheduler is running...")
@@ -95,7 +95,7 @@ func main() {
 func initScheduler(err error, queueConn queue.IProducer, myConfig *config.Config) (gocron.Scheduler, error) {
 	s, err := gocron.NewScheduler()
 	if err != nil {
-		logg.Error("Failed to create scheduler: ", err)
+		logg.Error("Failed to create scheduler: " + err.Error())
 		os.Exit(1)
 	}
 
@@ -104,7 +104,7 @@ func initScheduler(err error, queueConn queue.IProducer, myConfig *config.Config
 			eventName := "event is happens soon " + fmt.Sprint(rand.Intn(100))
 			logg.Debug("Task executed: " + eventName)
 			if err = queueConn.Publish(routingKey, []byte(eventName)); err != nil {
-				logg.Error("failed to publish message: ", err)
+				logg.Error("failed to publish message: " + err.Error())
 			}
 		},
 		queueConn,
@@ -119,7 +119,7 @@ func initScheduler(err error, queueConn queue.IProducer, myConfig *config.Config
 		gocron.WithSingletonMode(gocron.LimitModeReschedule),
 	)
 	if err != nil {
-		logg.Error("Failed to create job: ", err)
+		logg.Error("Failed to create job: " + err.Error())
 	}
 	return s, err
 }
