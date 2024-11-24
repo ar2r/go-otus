@@ -12,11 +12,13 @@ type Service struct {
 	logg    *slog.Logger
 	conn    *amqp.Connection
 	channel *amqp.Channel
+	Done    chan error
 }
 
 func New(
 	logg *slog.Logger,
 	conf Config,
+	doneCh chan error,
 ) (*Service, error) {
 	conn, err := amqp.Dial(conf.Uri)
 	if err != nil {
@@ -33,6 +35,7 @@ func New(
 		logg:    logg,
 		conn:    conn,
 		channel: channel,
+		Done:    doneCh,
 	}, nil
 }
 
@@ -68,6 +71,28 @@ func (s *Service) RegisterOutboxExchange() error {
 
 // RegisterInboxQueue creates a queue for incoming messages
 func (s *Service) RegisterInboxQueue() error {
+	queue, err := s.channel.QueueDeclare(
+		s.conf.TopicName,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("Queue Declare: %s", err)
+	}
+
+	if err = s.channel.QueueBind(
+		queue.Name,
+		s.conf.RoutingKey,
+		s.conf.ExchangeName,
+		false,
+		nil,
+	); err != nil {
+		return fmt.Errorf("Queue Bind: %s", err)
+	}
+
 	return nil
 }
 
@@ -94,6 +119,26 @@ func (s *Service) Publish(routingKey string, body []byte) error {
 }
 
 // Consume returns a channel with messages from the queue
-func (s *Service) Consume() (<-chan []byte, error) {
-	return nil, nil
+func (s *Service) Consume(messageCh chan string) error {
+	deliveries, err := s.channel.Consume(
+		s.conf.TopicName, // name
+		"calendar-consumer",
+		false, // noAck
+		false, // exclusive
+		false, // noLocal
+		false, // noWait
+		nil,   // arguments
+	)
+	if err != nil {
+		return fmt.Errorf("failed queue Consume: %s", err)
+	}
+
+	go func() {
+		for d := range deliveries {
+			messageCh <- string(d.Body)
+		}
+		close(messageCh)
+	}()
+
+	return nil
 }

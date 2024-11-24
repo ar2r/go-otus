@@ -25,7 +25,7 @@ type IProducer interface {
 
 type IConsumer interface {
 	// Consume returns a channel with messages from the queue
-	Consume() (<-chan []byte, error)
+	Consume(chan string) error
 }
 
 func NewProducer(
@@ -33,7 +33,7 @@ func NewProducer(
 	conf *config.Config,
 ) (IProducer, error) {
 	if conf.App.Queue == MessageBrokerRabbitMQ {
-		rabbitConn, err := rabbit.New(logg, conf.RabbitMQ)
+		rabbitConn, err := rabbit.New(logg, conf.RabbitMQ, nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create rabbitmq producer: %w", err)
 		}
@@ -54,6 +54,23 @@ func NewProducer(
 	return nil, ErrInvalidQueueType
 }
 
-//func NewConsumer(ctx context.Context, logg *slog.Logger, conf *Config) (IConsumer, error) {
-//	return nil, nil
-//}
+func NewConsumer(
+	logg *slog.Logger,
+	conf *config.Config,
+	doneCh chan error,
+) (IConsumer, error) {
+	if conf.App.Queue == MessageBrokerRabbitMQ {
+		rabbitConn, err := rabbit.New(logg, conf.RabbitMQ, doneCh)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create rabbitmq consumer: %w", err)
+		}
+
+		err = rabbitConn.RegisterInboxQueue()
+		if err != nil {
+			return nil, fmt.Errorf("failed to register inbox queue: %w", err)
+		}
+
+		return rabbitConn, nil
+	}
+	return nil, nil
+}

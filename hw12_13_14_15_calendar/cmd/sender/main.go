@@ -11,6 +11,7 @@ import (
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/queue"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/pkg/myslog"
 )
 
@@ -50,6 +51,24 @@ func main() {
 	defer cancel()
 	logg.Info("Signal handler initialized")
 
+	// Queue producer
+	eventsCh := make(chan string)
+	doneCh := make(chan error)
+
+	queueConn, err := queue.NewConsumer(logg, myConfig, doneCh)
+	if err != nil {
+		logg.Error("failed to create queue consumer: " + err.Error())
+		return
+	}
+
+	go handle(logg, eventsCh, doneCh)
+
+	err = queueConn.Consume(eventsCh)
+	if err != nil {
+		logg.Error("failed to consume from queue: " + err.Error())
+		return
+	}
+
 	// Graceful shutdown
 	go func() {
 		<-ctx.Done()
@@ -58,11 +77,17 @@ func main() {
 	}()
 	logg.Info("Sender is running...")
 
-	// todo: Тут читать из кролика и выводить сообщения в консоль )))
-	// todo: Запустить горутинку, которая будет читать из кролика и выводить сообщения в консоль
-
 	// Wait for signal
 	<-ctx.Done()
 
 	logg.Info("Sender shutdown!")
+}
+
+// todo: Перенести
+func handle(logg *slog.Logger, messages <-chan string, done chan<- error) {
+	for m := range messages {
+		logg.Warn("got message: " + m)
+	}
+	logg.Info("handle: deliveries channel closed")
+	done <- nil
 }
