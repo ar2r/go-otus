@@ -17,7 +17,7 @@ type AppSender struct {
 	consumer   queue.IConsumer
 }
 
-func NewSender(logg *slog.Logger, conf *config.Config, repo model.EventRepository) *AppSender {
+func New(logg *slog.Logger, conf *config.Config, repo model.EventRepository) *AppSender {
 	return &AppSender{
 		logg:       logg,
 		conf:       conf,
@@ -46,12 +46,24 @@ func (a *AppSender) Run() error {
 	return nil
 }
 
+func (a *AppSender) Stop() error {
+	err := a.consumer.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close consumer: %w", err)
+	}
+	return nil
+}
+
+// handle Вывести в консоль уведомление о предстоящих событиях.
 func handle(logg *slog.Logger, messages <-chan string, done chan<- error) {
 	for m := range messages {
 		event := model.Event{}
-		json.Unmarshal([]byte(m), &event)
-		logg.Warn("You have got notified about event: " + event.Title)
+		err := json.Unmarshal([]byte(m), &event)
+		if err != nil {
+			logg.Error("failed to unmarshal event: " + err.Error())
+			continue
+		}
+		logg.Warn("Event starts at: " + event.StartDt.String() + " title: " + event.Title)
 	}
-	logg.Debug("handle: deliveries channel closed")
 	done <- nil
 }

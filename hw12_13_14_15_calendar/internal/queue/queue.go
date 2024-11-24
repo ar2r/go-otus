@@ -24,7 +24,7 @@ type IProducer interface {
 }
 
 type IConsumer interface {
-	Consume(chan string) error
+	Consume(chan<- string) error
 	Close() error
 }
 

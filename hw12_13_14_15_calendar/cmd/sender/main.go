@@ -55,12 +55,21 @@ func main() {
 	defer cancel()
 
 	// App
-	app := appSender.NewSender(logg, myConfig, eventRepo)
+	app := appSender.New(logg, myConfig, eventRepo)
 	err = app.Run()
 	if err != nil {
 		logg.Error("failed to run sender: " + err.Error())
 		return
 	}
+
+	// Graceful shutdown
+	go func() {
+		<-ctx.Done()
+		err = app.Stop()
+		if err != nil {
+			logg.Error("failed to stop consumer: " + err.Error())
+		}
+	}()
 
 	<-ctx.Done()
 	logg.Info("Sender shutdown!")

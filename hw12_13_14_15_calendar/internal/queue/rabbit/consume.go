@@ -7,7 +7,7 @@ import (
 const ConsumerName = "calendar-consumer"
 
 // Consume returns a channel with messages from the queue
-func (c *Client) Consume(messageCh chan string) error {
+func (c *Client) Consume(messageCh chan<- string) error {
 	deliveries, err := c.channel.Consume(
 		c.conf.TopicName, // name
 		ConsumerName,
@@ -23,7 +23,6 @@ func (c *Client) Consume(messageCh chan string) error {
 
 	go func() {
 		for d := range deliveries {
-			c.logg.Debug("got message: %s", d.Body)
 			messageCh <- string(d.Body)
 			d.Ack(true)
 		}
