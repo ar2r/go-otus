@@ -10,12 +10,11 @@ import (
 	"syscall"
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/appScheduler"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/queue"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/pkg/myslog"
-	"github.com/go-co-op/gocron/v2"
-	"golang.org/x/exp/rand"
 )
 
 var (
@@ -62,64 +61,33 @@ func main() {
 	logg.Info("Signal handler initialized")
 
 	// Queue producer
-	queueConn, err := queue.NewProducer(logg, myConfig)
+	producerConn, err := queue.NewProducer(logg, myConfig)
 	if err != nil {
 		logg.Error("failed to create queue producer: " + err.Error())
 		return
 	}
 
-	// Cron scheduler
-	s, err := initScheduler(err, queueConn, myConfig)
+	// App
+	app, err := appScheduler.New(logg, myConfig, eventRepo, producerConn)
 	if err != nil {
-		logg.Error("failed to create scheduler: ", err)
+		logg.Error("failed to create app: " + err.Error())
 		return
 	}
-	s.Start()
+
+	if err = app.Run(ctx); err != nil {
+		logg.Error("failed to run app: " + err.Error())
+		return
+	}
 
 	// Graceful shutdown
 	go func() {
 		<-ctx.Done()
-		err = s.StopJobs()
+		err = app.Stop()
 		if err != nil {
-			logg.Error("failed to stop jobs: " + err.Error())
+			logg.Error("failed to stop cron jobs: " + err.Error())
 		}
 	}()
-	logg.Info("Scheduler is running...")
 
-	// Wait for signal
 	<-ctx.Done()
-
 	logg.Info("Scheduler shutdown!")
-}
-
-func initScheduler(err error, queueConn queue.IProducer, myConfig *config.Config) (gocron.Scheduler, error) {
-	s, err := gocron.NewScheduler()
-	if err != nil {
-		logg.Error("Failed to create scheduler: " + err.Error())
-		os.Exit(1)
-	}
-
-	task := gocron.NewTask(
-		func(queueConn queue.IProducer, routingKey string) {
-			eventName := "event is happens soon " + fmt.Sprint(rand.Intn(100))
-			logg.Debug("Task executed: " + eventName)
-			if err = queueConn.Publish(routingKey, []byte(eventName)); err != nil {
-				logg.Error("failed to publish message: " + err.Error())
-			}
-		},
-		queueConn,
-		myConfig.RabbitMQ.RoutingKey,
-	)
-
-	// add a job to the scheduler
-	_, err = s.NewJob(
-		gocron.CronJob("1/2 * * * * *", true),
-		task,
-		gocron.WithName("find-notify-events"),
-		gocron.WithSingletonMode(gocron.LimitModeReschedule),
-	)
-	if err != nil {
-		logg.Error("Failed to create job: " + err.Error())
-	}
-	return s, err
 }

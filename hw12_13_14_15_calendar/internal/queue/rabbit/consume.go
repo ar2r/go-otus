@@ -23,8 +23,9 @@ func (c *Client) Consume(messageCh chan string) error {
 
 	go func() {
 		for d := range deliveries {
+			c.logg.Debug("got message: %s", d.Body)
 			messageCh <- string(d.Body)
-			d.Ack(false)
+			d.Ack(true)
 		}
 		close(messageCh)
 	}()
