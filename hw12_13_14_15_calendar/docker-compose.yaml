@@ -3,27 +3,6 @@ volumes:
     driver: local
 
 services:
-  postgres:
-    image: postgres:17
-    container_name: postgres
-    environment:
-      POSTGRES_USER: calendar
-      POSTGRES_PASSWORD: calendar-pwd
-      POSTGRES_DB: calendar
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    restart: unless-stopped
-
-  # rabbit mq latest version with web UI
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
-    ports:
-      - "15672:15672" # UI http://localhost:15672 (guest:guest)
-    restart: unless-stopped
-
   calendar:
     build:
       context: .
@@ -65,4 +44,25 @@ services:
       - "8082:8082"
     depends_on:
       - postgres
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    environment:
+      POSTGRES_USER: calendar
+      POSTGRES_PASSWORD: calendar-pwd
+      POSTGRES_DB: calendar
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  # rabbit mq latest version with web UI
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "15672:15672" # UI http://localhost:15672 (guest:guest)
     restart: unless-stopped
