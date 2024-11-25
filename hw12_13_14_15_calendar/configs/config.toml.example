@@ -3,6 +3,7 @@ env = "prod" # dev | prod
 debug = false
 storage = "memory" # memory | sql
 queue = "rabbitmq" # rabbitmq | kafka
+cleanup_duration = "100d"
 
 [http]
 host = ""
