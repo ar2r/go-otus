@@ -1,4 +1,4 @@
-package app
+package calendar
 
 type Config struct {
 	Env     string `toml:"env"`

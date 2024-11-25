@@ -9,7 +9,7 @@ services:
       dockerfile: .devenv/calendar/Dockerfile
     container_name: calendar
     volumes:
-      - .:/app
+      - .:/calendar
     ports:
       - "8080:8080" # REST http://localhost:8080
       - "8090:8090" # GRPC http://localhost:8090
@@ -25,7 +25,7 @@ services:
       dockerfile: .devenv/scheduler/Dockerfile
     container_name: scheduler
     volumes:
-      - .:/app
+      - .:/calendar
     ports:
       - "8081:8081"
     depends_on:
@@ -42,7 +42,7 @@ services:
       dockerfile: .devenv/sender/Dockerfile
     container_name: sender
     volumes:
-      - .:/app
+      - .:/calendar
     ports:
       - "8082:8082"
     depends_on:

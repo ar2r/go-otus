@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	dto "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/dto"
+	dto "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/calendar/dto"
 	mock "github.com/stretchr/testify/mock"
 
 	model "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"

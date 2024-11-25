@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/calendar"
 )
 
 // Server HTTP сервер для обработки REST запросов.
 type Server struct {
-	app        app.IApplication
+	app        calendar.IApplication
 	logg       IServerLogger
 	httpServer *http.Server
 }
@@ -24,7 +24,7 @@ type IServerLogger interface {
 	Error(msg string, attrs ...interface{})
 }
 
-func NewServer(app app.IApplication, logg IServerLogger, conf Config) *Server {
+func NewServer(app calendar.IApplication, logg IServerLogger, conf Config) *Server {
 	return &Server{
 		app:  app,
 		logg: logg,

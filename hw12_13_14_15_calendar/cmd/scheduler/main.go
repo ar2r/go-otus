@@ -10,7 +10,7 @@ import (
 	"syscall"
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/appscheduler"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/scheduler"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/queue"
@@ -70,7 +70,7 @@ func main() {
 	}
 
 	// App
-	app, err := appscheduler.New(logg, myConfig, eventRepo, producerConn)
+	app, err := scheduler.New(logg, myConfig, eventRepo, producerConn)
 	if err != nil {
 		logg.Error("failed to create app: " + err.Error())
 		return

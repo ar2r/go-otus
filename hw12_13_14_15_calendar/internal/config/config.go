@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/BurntSushi/toml"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/calendar"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/database"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/queue/kafka"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/queue/rabbit"
@@ -11,7 +11,7 @@ import (
 )
 
 type Config struct {
-	App        app.Config        `toml:"app"`
+	App        calendar.Config   `toml:"app"`
 	HTTPServer httpserver.Config `toml:"http"`
 	GRPCServer grpcserver.Config `toml:"grpc"`
 	Database   database.Config   `toml:"database"`

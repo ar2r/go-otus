@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/calendar"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/grpc"
@@ -73,7 +73,7 @@ func main() {
 	}
 
 	// Application
-	calendar := app.New(eventRepo)
+	calendar := calendar.New(eventRepo)
 	logg.Info("App initialized")
 
 	// Signal handler

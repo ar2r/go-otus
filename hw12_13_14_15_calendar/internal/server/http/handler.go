@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	dto2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/dto"
+	dto2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/calendar/dto"
 	"github.com/google/uuid"
 )
 
