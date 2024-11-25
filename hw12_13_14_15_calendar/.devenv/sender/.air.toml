@@ -4,8 +4,8 @@ tmp_dir = "tmp"
 
 [build]
 args_bin = []
-bin = "./tmp/main"
-cmd = "go build -o ./tmp/main ./cmd/sender"
+bin = "./tmp/sender"
+cmd = "go build -o ./tmp/sender ./cmd/sender"
 delay = 1000
 exclude_dir = ["assets", "tmp", "vendor", "testdata"]
 exclude_file = []
@@ -17,7 +17,7 @@ include_dir = []
 include_ext = ["go", "tpl", "tmpl", "html"]
 include_file = []
 kill_delay = "0s"
-log = "build-errors.log"
+log = "build-errors-sender.log"
 poll = false
 poll_interval = 0
 post_cmd = []
