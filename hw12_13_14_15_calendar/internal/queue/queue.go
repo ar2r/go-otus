@@ -64,6 +64,12 @@ func NewConsumer(
 			return nil, fmt.Errorf("failed to create rabbitmq consumer: %w", err)
 		}
 
+		// Register Exchange
+		if err = rabbitConn.RegisterOutboxExchange(); err != nil {
+			return nil, fmt.Errorf("failed to register outbox exchange: %w", err)
+		}
+
+		// Register Inbox Queue
 		err = rabbitConn.RegisterInboxQueue()
 		if err != nil {
 			return nil, fmt.Errorf("failed to register inbox queue: %w", err)
