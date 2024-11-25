@@ -149,3 +149,9 @@ func (s *Storage) ListNotNotified(ctx context.Context) ([]model.Event, error) {
 	rows, err := s.conn.Query(ctx, "SELECT * FROM events WHERE notification_sent = False AND start_dt - notify_at <= NOW()")
 	return fetchRows(err, rows)
 }
+
+// DeleteOlderThan Удалить все события, которые закончились раньше указанной даты.
+func (s *Storage) DeleteOlderThan(ctx context.Context, date time.Time) error {
+	_, err := s.conn.Exec(ctx, "DELETE FROM events WHERE end_dt < $1 and end_dt < NOW()", date)
+	return err
+}

@@ -10,6 +10,7 @@ import (
 type EventRepository interface {
 	cruder
 	lister
+	cleaner
 }
 
 type cruder interface {
@@ -25,4 +26,8 @@ type lister interface {
 	ListByWeek(ctx context.Context, startDt time.Time) ([]Event, error)
 	ListByMonth(ctx context.Context, startDt time.Time) ([]Event, error)
 	ListNotNotified(ctx context.Context) ([]Event, error)
+}
+
+type cleaner interface {
+	DeleteOlderThan(ctx context.Context, t time.Time) error
 }

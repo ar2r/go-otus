@@ -138,6 +138,7 @@ func (s *Storage) ListByMonth(ctx context.Context, startDt time.Time) ([]model.E
 	return s.ListByPeriod(ctx, startOfMonth, endOfMonth)
 }
 
+// ListNotNotified Найти все события, у которых не отправлено уведомление и время уведомления наступило.
 func (s *Storage) ListNotNotified(_ context.Context) ([]model.Event, error) {
 	foundItems := make([]model.Event, 0)
 	s.items.Range(func(_, value any) bool {
@@ -148,4 +149,16 @@ func (s *Storage) ListNotNotified(_ context.Context) ([]model.Event, error) {
 		return true
 	})
 	return foundItems, nil
+}
+
+// DeleteOlderThan Удалить события, которые закончились раньше указанной даты.
+func (s *Storage) DeleteOlderThan(_ context.Context, t time.Time) error {
+	s.items.Range(func(key, value any) bool {
+		v := value.(model.Event)
+		if v.EndDt.Before(t) {
+			s.items.Delete(key)
+		}
+		return true
+	})
+	return nil
 }
