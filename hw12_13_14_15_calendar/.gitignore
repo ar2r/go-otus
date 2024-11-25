@@ -2,4 +2,4 @@ logs/
 bin/
 configs/config.toml
 main
-build-errors.log
+/tmp
