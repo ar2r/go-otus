@@ -11,12 +11,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/calendar"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/grpc"
 	internalhttp "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/http"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/pkg/myslog"
 )
 
@@ -66,7 +66,7 @@ func main() {
 	}
 
 	// Event EventRepository
-	eventRepo, err = adapters.New(ctx, logg, myConfig)
+	eventRepo, err = storage.New(ctx, logg, myConfig)
 	if err != nil {
 		logg.Error("failed to create repository: " + err.Error())
 		return

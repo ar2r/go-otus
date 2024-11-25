@@ -1,14 +1,14 @@
-package adapters
+package storage
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
 
-	memorystorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters/memory"
-	sqlstorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters/pgx"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
+	memorystorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/storage/pgx"
 )
 
 func New(ctx context.Context, logg *slog.Logger, myConfig *config.Config) (model.EventRepository, error) {
