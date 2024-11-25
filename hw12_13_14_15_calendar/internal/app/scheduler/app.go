@@ -11,8 +11,10 @@ import (
 	"github.com/go-co-op/gocron/v2"
 )
 
-const CrontabNotify = "1/2 * * * * *"
-const CrontabClean = "1 * * * * *"
+const (
+	CrontabNotify = "1/2 * * * * *"
+	CrontabClean  = "1 * * * * *"
+)
 
 type AppScheduler struct {
 	logg      *slog.Logger

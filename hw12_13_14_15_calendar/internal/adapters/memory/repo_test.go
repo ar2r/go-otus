@@ -301,6 +301,52 @@ func TestListByMonth(t *testing.T) {
 	}
 }
 
+func TestDeleteOlderThan(t *testing.T) {
+	memStorage := New()
+	start := time.Date(2023, 10, 1, 12, 0, 0, 0, time.UTC)
+	end := start.Add(2 * time.Hour)
+	e := createStubEvent("event 1", start, end)
+
+	tests := []struct {
+		name      string
+		operation func() error
+		date      time.Time
+		expected  []model.Event
+	}{
+		{
+			name: "Delete event older than",
+			operation: func() error {
+				memStorage = New()
+				memStorage.Add(ctx, e)
+				return nil
+			},
+			date:     start.AddDate(0, 0, 1),
+			expected: []model.Event{},
+		},
+		{
+			name: "Delete event not older than",
+			operation: func() error {
+				memStorage = New()
+				memStorage.Add(ctx, e)
+				return nil
+			},
+			date:     start,
+			expected: []model.Event{e},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.operation()
+			memStorage.DeleteOlderThan(ctx, tt.date)
+			got, _ := memStorage.List(ctx)
+			if !equal(got, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+}
+
 func createStubEvent(name string, startDt time.Time, endDt time.Time) model.Event {
 	eventID, _ := uuid.NewV7()
 	userID, _ := uuid.NewV7()
