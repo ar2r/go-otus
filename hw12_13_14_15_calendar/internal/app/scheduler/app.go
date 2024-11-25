@@ -38,8 +38,8 @@ func New(logg *slog.Logger, conf *config.Config, repo model.EventRepository, pro
 }
 
 func (a *AppScheduler) Run(ctx context.Context) error {
-	a.registerTaskProducer(ctx)
-	a.registerTaskCleaner(ctx)
+	a.registerProducerTask(ctx)
+	a.registerCleanerTask(ctx)
 
 	a.scheduler.Start()
 	a.logg.Info("Scheduler is running...")
@@ -54,7 +54,7 @@ func (a *AppScheduler) Stop() error {
 	return nil
 }
 
-func (a *AppScheduler) registerTaskProducer(ctx context.Context) {
+func (a *AppScheduler) registerProducerTask(ctx context.Context) {
 	produceTask := gocron.NewTask(
 		a.produceNotification(ctx),
 		a.producer,
@@ -71,11 +71,10 @@ func (a *AppScheduler) registerTaskProducer(ctx context.Context) {
 	}
 }
 
-func (a *AppScheduler) registerTaskCleaner(ctx context.Context) {
+func (a *AppScheduler) registerCleanerTask(ctx context.Context) {
 	cleanerTask := gocron.NewTask(
-		a.produceNotification(ctx),
-		a.producer,
-		a.conf.RabbitMQ.RoutingKey,
+		a.cleanupEvents(ctx),
+		a.conf.App.CleanupDuration,
 	)
 	_, err := a.scheduler.NewJob(
 		gocron.CronJob(CrontabClean, true),
