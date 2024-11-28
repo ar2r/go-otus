@@ -65,10 +65,7 @@ func main() {
 	// Graceful shutdown
 	go func() {
 		<-ctx.Done()
-		err = app.Stop()
-		if err != nil {
-			logg.Error("failed to stop consumer: " + err.Error())
-		}
+		app.Stop()
 	}()
 
 	<-ctx.Done()

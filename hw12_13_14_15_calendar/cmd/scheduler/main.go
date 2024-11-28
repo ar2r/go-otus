@@ -33,6 +33,8 @@ func init() {
 }
 
 func main() {
+	errorCh := make(chan error) // Канал для передачи ошибок между горутинами
+
 	ctx := context.Background()
 	flag.Parse()
 
@@ -70,7 +72,7 @@ func main() {
 	}
 
 	// App
-	app, err := scheduler.New(logg, myConfig, eventRepo, producerConn)
+	app, err := scheduler.New(logg, myConfig, eventRepo, producerConn, errorCh)
 	if err != nil {
 		logg.Error("failed to create app: " + err.Error())
 		return
@@ -81,17 +83,22 @@ func main() {
 		return
 	}
 
+	go func() {
+		for {
+			select {
+			case <-errorCh:
+				cancel()
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
 	// Graceful shutdown
 	go func() {
 		<-ctx.Done()
-		err = producerConn.Close()
-		if err != nil {
-			logg.Error("failed to close producer connection: " + err.Error())
-		}
-		err = app.Stop()
-		if err != nil {
-			logg.Error("failed to stop cron jobs: " + err.Error())
-		}
+		producerConn.Close()
+		app.Stop()
 	}()
 
 	<-ctx.Done()

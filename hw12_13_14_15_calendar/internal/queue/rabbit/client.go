@@ -39,17 +39,16 @@ func New(
 	}, nil
 }
 
-func (c *Client) Close() error {
+func (c *Client) Close() {
 	err := c.channel.Close()
 	if err != nil {
-		return fmt.Errorf("failed to close channel: %w", err)
+		c.logg.Info("failed to close channel")
 	}
 
 	err = c.conn.Close()
 	if err != nil {
-		return fmt.Errorf("failed to close: %w", err)
+		c.logg.Info("failed to close message broker connection")
 	}
-	return nil
 }
 
 // RegisterOutboxExchange creates an exchange for outgoing messages.

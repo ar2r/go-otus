@@ -46,12 +46,8 @@ func (a *AppSender) Run() error {
 	return nil
 }
 
-func (a *AppSender) Stop() error {
-	err := a.consumer.Close()
-	if err != nil {
-		return fmt.Errorf("failed to close consumer: %w", err)
-	}
-	return nil
+func (a *AppSender) Stop() {
+	a.consumer.Close()
 }
 
 // handle Вывести в консоль уведомление о предстоящих событиях.

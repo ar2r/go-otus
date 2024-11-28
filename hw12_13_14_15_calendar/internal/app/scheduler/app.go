@@ -22,9 +22,10 @@ type AppScheduler struct {
 	repo      model.EventRepository
 	producer  queue.IProducer
 	scheduler gocron.Scheduler
+	errorCh   chan<- error
 }
 
-func New(logg *slog.Logger, conf *config.Config, repo model.EventRepository, producer queue.IProducer) (*AppScheduler, error) {
+func New(logg *slog.Logger, conf *config.Config, repo model.EventRepository, producer queue.IProducer, errorCh chan<- error) (*AppScheduler, error) {
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create scheduler: %w", err)
@@ -36,6 +37,7 @@ func New(logg *slog.Logger, conf *config.Config, repo model.EventRepository, pro
 		repo:      repo,
 		producer:  producer,
 		scheduler: scheduler,
+		errorCh:   errorCh,
 	}, nil
 }
 
@@ -48,12 +50,11 @@ func (a *AppScheduler) Run(ctx context.Context) error {
 	return nil
 }
 
-func (a *AppScheduler) Stop() error {
+func (a *AppScheduler) Stop() {
 	err := a.scheduler.StopJobs()
 	if err != nil {
-		return fmt.Errorf("failed to stop jobs: %w", err)
+		a.logg.Warn("Failed to stop jobs: " + err.Error())
 	}
-	return nil
 }
 
 func (a *AppScheduler) registerProducerTask(ctx context.Context) {
