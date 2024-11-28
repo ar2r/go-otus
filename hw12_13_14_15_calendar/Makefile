@@ -16,6 +16,12 @@ run: build
 	# todo: Запускать в одном докер контейнере все три бинарника через nohup
 	$(BIN) -config ./configs/config.toml
 
+run-scheduler: build
+	$(BIN_SCHEDULER) -config ./configs/config.toml
+
+run-sender: build
+	$(BIN_SENDER) -config ./configs/config.toml
+
 build-img:
 	docker build \
 		--build-arg=LDFLAGS="$(LDFLAGS)" \
