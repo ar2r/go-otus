@@ -18,12 +18,12 @@ var (
 	ErrQueueTypeNotImplemented = fmt.Errorf("queue type not implemented")
 )
 
-type IProducer interface {
+type MessageProducer interface {
 	Publish(routingKey string, body []byte) error
 	Close()
 }
 
-type IConsumer interface {
+type MessageConsumer interface {
 	Consume(chan<- string) error
 	Close()
 }
@@ -31,7 +31,7 @@ type IConsumer interface {
 func NewProducer(
 	logg *slog.Logger,
 	conf *config.Config,
-) (IProducer, error) {
+) (MessageProducer, error) {
 	if conf.App.Queue == MessageBrokerRabbitMQ {
 		rabbitConn, err := rabbit.New(logg, conf.RabbitMQ, nil)
 		if err != nil {
@@ -57,7 +57,7 @@ func NewConsumer(
 	logg *slog.Logger,
 	conf *config.Config,
 	doneCh chan error,
-) (IConsumer, error) {
+) (MessageConsumer, error) {
 	if conf.App.Queue == MessageBrokerRabbitMQ {
 		rabbitConn, err := rabbit.New(logg, conf.RabbitMQ, doneCh)
 		if err != nil {

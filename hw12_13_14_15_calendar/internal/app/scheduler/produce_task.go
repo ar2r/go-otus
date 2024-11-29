@@ -3,12 +3,10 @@ package scheduler
 import (
 	"context"
 	"encoding/json"
-
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/queue"
 )
 
-func (a *AppScheduler) produceNotification(ctx context.Context) func(queueConn queue.IProducer, routingKey string) {
-	return func(queueConn queue.IProducer, routingKey string) {
+func (a *AppScheduler) produceNotification(ctx context.Context) func(queueConn MessageProducer, routingKey string) {
+	return func(queueConn MessageProducer, routingKey string) {
 		a.logg.Debug("Produce notification task started")
 
 		events, err := a.repo.ListNotNotified(ctx)

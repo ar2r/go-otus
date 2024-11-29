@@ -70,6 +70,7 @@ func main() {
 		logg.Error("failed to create queue producer: " + err.Error())
 		return
 	}
+	defer producerConn.Close()
 
 	// App
 	app, err := scheduler.New(logg, myConfig, eventRepo, producerConn, errorCh)
@@ -77,6 +78,7 @@ func main() {
 		logg.Error("failed to create app: " + err.Error())
 		return
 	}
+	defer app.Stop()
 
 	if err = app.Run(ctx); err != nil {
 		logg.Error("failed to run app: " + err.Error())
@@ -92,13 +94,6 @@ func main() {
 				return
 			}
 		}
-	}()
-
-	// Graceful shutdown
-	go func() {
-		<-ctx.Done()
-		producerConn.Close()
-		app.Stop()
 	}()
 
 	<-ctx.Done()

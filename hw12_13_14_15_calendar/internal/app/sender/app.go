@@ -14,7 +14,12 @@ type AppSender struct {
 	logg       *slog.Logger
 	conf       *config.Config
 	repository model.EventRepository
-	consumer   queue.IConsumer
+	consumer   MessageConsumer
+}
+
+type MessageConsumer interface {
+	Consume(chan<- string) error
+	Close()
 }
 
 func New(logg *slog.Logger, conf *config.Config, repo model.EventRepository) *AppSender {

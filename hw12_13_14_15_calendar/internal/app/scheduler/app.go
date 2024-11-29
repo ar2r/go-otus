@@ -7,7 +7,6 @@ import (
 
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/config"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/queue"
 	"github.com/go-co-op/gocron/v2"
 )
 
@@ -20,12 +19,17 @@ type AppScheduler struct {
 	logg      *slog.Logger
 	conf      *config.Config
 	repo      model.EventRepository
-	producer  queue.IProducer
+	producer  MessageProducer
 	scheduler gocron.Scheduler
 	errorCh   chan<- error
 }
 
-func New(logg *slog.Logger, conf *config.Config, repo model.EventRepository, producer queue.IProducer, errorCh chan<- error) (*AppScheduler, error) {
+type MessageProducer interface {
+	Publish(routingKey string, body []byte) error
+	Close()
+}
+
+func New(logg *slog.Logger, conf *config.Config, repo model.EventRepository, producer MessageProducer, errorCh chan<- error) (*AppScheduler, error) {
 	scheduler, err := gocron.NewScheduler()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create scheduler: %w", err)
