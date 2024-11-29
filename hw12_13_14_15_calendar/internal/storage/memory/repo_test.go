@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/google/uuid"
 )
@@ -63,7 +62,7 @@ func TestStorage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			memStorage := New()
 			err := tt.operation(memStorage)
-			if err != nil && !errors.Is(err, adapters.ErrNotFound) {
+			if err != nil && !errors.Is(err, model.ErrNotFound) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			if got, _ := memStorage.List(ctx); !equal(got, tt.expected) {
@@ -89,8 +88,8 @@ func TestUpdateNotExistentEvent(t *testing.T) {
 	memStorage := New()
 	e := createStubEvent("event 1", time.Time{}, time.Time{})
 	_, err := memStorage.Update(ctx, e)
-	if !errors.Is(err, adapters.ErrNotFound) {
-		t.Errorf("expected error %v, got %v", adapters.ErrNotFound, err)
+	if !errors.Is(err, model.ErrNotFound) {
+		t.Errorf("expected error %v, got %v", model.ErrNotFound, err)
 	}
 }
 
@@ -135,7 +134,7 @@ func TestUpdate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.operation()
-			if err != nil && !errors.Is(err, adapters.ErrNotFound) {
+			if err != nil && !errors.Is(err, model.ErrNotFound) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			if got, _ := memStorage.List(ctx); !equal(got, tt.expected) {
@@ -295,6 +294,52 @@ func TestListByMonth(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, _ := memStorage.ListByMonth(ctx, tt.date)
+			if !equal(got, tt.expected) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+}
+
+func TestDeleteOlderThan(t *testing.T) {
+	memStorage := New()
+	start := time.Date(2023, 10, 1, 12, 0, 0, 0, time.UTC)
+	end := start.Add(2 * time.Hour)
+	e := createStubEvent("event 1", start, end)
+
+	tests := []struct {
+		name      string
+		operation func() error
+		date      time.Time
+		expected  []model.Event
+	}{
+		{
+			name: "Delete event older than",
+			operation: func() error {
+				memStorage = New()
+				memStorage.Add(ctx, e)
+				return nil
+			},
+			date:     start.AddDate(0, 0, 1),
+			expected: []model.Event{},
+		},
+		{
+			name: "Delete event not older than",
+			operation: func() error {
+				memStorage = New()
+				memStorage.Add(ctx, e)
+				return nil
+			},
+			date:     start,
+			expected: []model.Event{e},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.operation()
+			memStorage.DeleteOlderThan(ctx, tt.date)
+			got, _ := memStorage.List(ctx)
 			if !equal(got, tt.expected) {
 				t.Errorf("expected %v, got %v", tt.expected, got)
 			}

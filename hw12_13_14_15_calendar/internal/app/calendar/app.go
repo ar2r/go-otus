@@ -1,9 +1,9 @@
-package app
+package calendar
 
 import (
 	"context"
 
-	dto2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/dto"
+	dto2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/calendar/dto"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 )
 

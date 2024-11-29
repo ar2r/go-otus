@@ -1,3 +1,5 @@
 logs/
 bin/
-config.toml
+configs/config.toml
+main
+/tmp

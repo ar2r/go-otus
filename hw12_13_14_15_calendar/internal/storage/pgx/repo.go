@@ -72,8 +72,18 @@ func (s *Storage) Get(ctx context.Context, id uuid.UUID) (model.Event, error) {
 // Update Обновить событие.
 func (s *Storage) Update(ctx context.Context, event model.Event) (model.Event, error) {
 	_, err := s.conn.Exec(ctx,
-		"UPDATE events SET title = $1, description = $2, start_dt = $3, end_dt = $4, user_id = $5, notify_at = $6 WHERE id = $7",
-		event.Title, event.Description, event.StartDt, event.EndDt, event.UserID, event.NotifyAt, event.ID)
+		"UPDATE events SET "+
+			" title = $1, description = $2, start_dt = $3, end_dt = $4, user_id = $5, notify_at = $6, notification_sent= $7"+
+			" WHERE id = $8",
+		event.Title,
+		event.Description,
+		event.StartDt,
+		event.EndDt,
+		event.UserID,
+		event.NotifyAt,
+		event.NotificationSent,
+		event.ID,
+	)
 	if err != nil {
 		return model.Event{}, err
 	}
@@ -89,9 +99,7 @@ func (s *Storage) Delete(ctx context.Context, uuid uuid.UUID) error {
 	return nil
 }
 
-// ListByPeriod Найти события, которые пересекается с указанным временным промежутком.
-func (s *Storage) ListByPeriod(ctx context.Context, startDt, endDt time.Time) ([]model.Event, error) {
-	rows, err := s.conn.Query(ctx, "SELECT * FROM events WHERE start_dt < $1 AND end_dt > $2", endDt, startDt)
+func fetchRows(err error, rows pgx.Rows) ([]model.Event, error) {
 	if err != nil {
 		return nil, err
 	}
@@ -102,6 +110,12 @@ func (s *Storage) ListByPeriod(ctx context.Context, startDt, endDt time.Time) ([
 		return nil, err
 	}
 	return events, nil
+}
+
+// ListByPeriod Найти события, которые пересекается с указанным временным промежутком.
+func (s *Storage) ListByPeriod(ctx context.Context, startDt, endDt time.Time) ([]model.Event, error) {
+	rows, err := s.conn.Query(ctx, "SELECT * FROM events WHERE start_dt < $1 AND end_dt > $2", endDt, startDt)
+	return fetchRows(err, rows)
 }
 
 // ListByDate Найти все события, которые происходят в указанный день.
@@ -128,4 +142,16 @@ func (s *Storage) ListByMonth(ctx context.Context, startDt time.Time) ([]model.E
 	endOfMonth := startOfMonth.AddDate(0, 1, 0)
 	s.logg.Debug(fmt.Sprintf("ListByMonth: startOfMonth=%s, endOfMonth=%s", startOfMonth, endOfMonth))
 	return s.ListByPeriod(ctx, startOfMonth, endOfMonth)
+}
+
+// ListNotNotified Найти все события, для которых не было отправлено уведомление и время уведомления наступило.
+func (s *Storage) ListNotNotified(ctx context.Context) ([]model.Event, error) {
+	rows, err := s.conn.Query(ctx, "SELECT * FROM events WHERE notification_sent = False AND start_dt - notify_at <= NOW()")
+	return fetchRows(err, rows)
+}
+
+// DeleteOlderThan Удалить все события, которые закончились раньше указанной даты.
+func (s *Storage) DeleteOlderThan(ctx context.Context, date time.Time) error {
+	_, err := s.conn.Exec(ctx, "DELETE FROM events WHERE end_dt < $1 and end_dt < NOW()", date)
+	return err
 }

@@ -1,25 +1,15 @@
 [app]
 env = "prod" # dev | prod
 debug = false
-storage = "memory" # memory | sql
-queue = "rabbitmq" # rabbitmq | kafka
-cleanup_duration = "100d"
-
-[http]
-host = ""
-port = 8080
-
-[grpc]
-host = ""
-port = 8090
+storage = "sql" # memory | sql
+queue = "rabbitmq"
 
 [logger]
 level = "debug" # debug | info | warn | error
 channel = "stdout" # stdout | stderr | file
-# file = "logs/calendar.log"
 
 [database]
-host = "localhost"
+host = "postgres"
 port = 5432
 database = "calendar"
 username = "calendar"
@@ -30,11 +20,8 @@ timezone = "Europe/Moscow"
 target_session_attr = "read-write"
 
 [rabbitmq]
-uri = "amqp://guest:guest@localhost:5672"
+uri = "amqp://guest:guest@rabbitmq:5672"
 exchange_name = "calendar"
 exchange_type = "direct"
 routing_key = "event.notification.upcoming"
 topic_name = "calendar.notifications"
-
-[kafka]
-hosts = "localhost:111;localhost:222"

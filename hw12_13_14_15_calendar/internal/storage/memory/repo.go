@@ -5,7 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/adapters"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/google/uuid"
 )
@@ -38,7 +37,7 @@ func (s *Storage) CreateEvent(ctx context.Context, userID uuid.UUID, id uuid.UUI
 	}
 
 	if len(foundEvents) > 0 {
-		return adapters.ErrDateBusy
+		return model.ErrDateBusy
 	}
 
 	_, err = s.Add(ctx, event)
@@ -50,7 +49,7 @@ func (s *Storage) Get(_ context.Context, id uuid.UUID) (model.Event, error) {
 	if v, exists := s.items.Load(id); exists {
 		return v.(model.Event), nil
 	}
-	return model.Event{}, adapters.ErrNotFound
+	return model.Event{}, model.ErrNotFound
 }
 
 // Add Добавить событие.
@@ -64,7 +63,7 @@ func (s *Storage) Add(_ context.Context, e model.Event) (model.Event, error) {
 // Update Обновить событие.
 func (s *Storage) Update(_ context.Context, e model.Event) (model.Event, error) {
 	if _, exists := s.items.Load(e.ID); !exists {
-		return model.Event{}, adapters.ErrNotFound
+		return model.Event{}, model.ErrNotFound
 	}
 	s.items.Store(e.ID, e)
 	v, _ := s.items.Load(e.ID)
@@ -137,4 +136,29 @@ func (s *Storage) ListByMonth(ctx context.Context, startDt time.Time) ([]model.E
 	endOfMonth := startOfMonth.AddDate(0, 1, 0)
 
 	return s.ListByPeriod(ctx, startOfMonth, endOfMonth)
+}
+
+// ListNotNotified Найти все события, у которых не отправлено уведомление и время уведомления наступило.
+func (s *Storage) ListNotNotified(_ context.Context) ([]model.Event, error) {
+	foundItems := make([]model.Event, 0)
+	s.items.Range(func(_, value any) bool {
+		v := value.(model.Event)
+		if !v.NotificationSent && v.StartDt.Add(-v.NotifyAt).Before(time.Now()) {
+			foundItems = append(foundItems, v)
+		}
+		return true
+	})
+	return foundItems, nil
+}
+
+// DeleteOlderThan Удалить события, которые закончились раньше указанной даты.
+func (s *Storage) DeleteOlderThan(_ context.Context, t time.Time) error {
+	s.items.Range(func(key, value any) bool {
+		v := value.(model.Event)
+		if v.EndDt.Before(t) {
+			s.items.Delete(key)
+		}
+		return true
+	})
+	return nil
 }

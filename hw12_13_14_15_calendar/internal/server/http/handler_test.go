@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/dto"
-	mock_app "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/mocks"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/calendar/dto"
+	mock_app "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/calendar/mocks"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

@@ -3,8 +3,8 @@ package grpcserver
 import (
 	"context"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app"
-	dto2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/dto"
+	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/calendar"
+	dto2 "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/app/calendar/dto"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	pb "github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/server/grpc/protobuf"
 	"github.com/google/uuid"
@@ -15,10 +15,10 @@ import (
 // EventService Слой преобразования запроса pb в DTO и вызов сервис слоя приложения (Application).
 type EventService struct {
 	pb.UnimplementedEventServiceServer
-	app app.IApplication
+	app calendar.IApplication
 }
 
-func NewService(app app.IApplication) pb.EventServiceServer {
+func NewService(app calendar.IApplication) pb.EventServiceServer {
 	return &EventService{
 		app: app,
 	}

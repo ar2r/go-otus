@@ -1,0 +1,16 @@
+[app]
+env = "prod" # dev | prod
+debug = false
+storage = "sql" # memory | sql
+queue = "rabbitmq"
+
+[logger]
+level = "debug" # debug | info | warn | error
+channel = "stdout" # stdout | stderr | file
+
+[rabbitmq]
+uri = "amqp://guest:guest@rabbitmq:5672"
+exchange_name = "calendar"
+exchange_type = "direct"
+routing_key = "event.notification.upcoming"
+topic_name = "calendar.notifications"
