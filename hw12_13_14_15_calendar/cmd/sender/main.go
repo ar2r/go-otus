@@ -61,12 +61,7 @@ func main() {
 		logg.Error("failed to run sender: " + err.Error())
 		return
 	}
-
-	// Graceful shutdown
-	go func() {
-		<-ctx.Done()
-		app.Stop()
-	}()
+	defer app.Stop()
 
 	<-ctx.Done()
 	logg.Info("Sender shutdown!")
