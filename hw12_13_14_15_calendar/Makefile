@@ -2,7 +2,9 @@ BIN := "./bin/calendar"
 BIN_SCHEDULER := "./bin/calendar_scheduler"
 BIN_SENDER := "./bin/calendar_sender"
 
-DOCKER_IMG="calendar:develop"
+DOCKER_CALENDAR_IMG="calendar:develop"
+DOCKER_SCHEDULER_IMG="scheduler:develop"
+DOCKER_SENDER_IMG="sender:develop"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
@@ -25,8 +27,16 @@ run-sender: build
 build-img:
 	docker build \
 		--build-arg=LDFLAGS="$(LDFLAGS)" \
-		-t $(DOCKER_IMG) \
-		-f build/Dockerfile .
+		-t $(DOCKER_CALENDAR_IMG) \
+		-f build/Dockerfile.calendar .
+	docker build \
+    		--build-arg=LDFLAGS="$(LDFLAGS)" \
+    		-t $(DOCKER_SCHEDULER_IMG) \
+    		-f build/Dockerfile.scheduler .
+	docker build \
+    		--build-arg=LDFLAGS="$(LDFLAGS)" \
+    		-t $(DOCKER_SENDER_IMG) \
+    		-f build/Dockerfile.sender .
 
 run-img: build-img
 	docker run $(DOCKER_IMG)
@@ -66,6 +76,9 @@ migrate: build
 	$(BIN) -config ./configs/config.toml migrate
 
 up:
+	docker compose up --build -d
+
+up-hot:
 	docker compose up -d
 
 down:
