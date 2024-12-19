@@ -39,7 +39,7 @@ build-img:
     		-f build/Dockerfile.sender .
 
 run-img: build-img
-	docker run $(DOCKER_IMG)
+	docker run $(DOCKER_CALENDAR_IMG)
 
 clean:
 	rm -rf $(BIN)
@@ -53,6 +53,12 @@ test:
 	# Если тесты запускаются с TZ=UTC или TZ="", происходит какая-то странная магия. Подробности в пул реквесте.
 	# Поэтому запускаем тесты с TZ=Europe/Moscow 🤬
 	TZ=Europe/Moscow go test -v -race -tags=ci ./internal/...
+
+test-integration:
+	docker compose -f docker-compose.test.yaml --progress quiet up --build -d
+	TZ=Europe/Moscow go test -tags=integration -v ./tests/...; exit_code=$$?; \
+	docker compose -f docker-compose.test.yaml --progress quiet down; \
+	exit $$exit_code
 
 install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.62.0

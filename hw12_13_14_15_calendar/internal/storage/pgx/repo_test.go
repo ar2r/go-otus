@@ -30,7 +30,7 @@ func setupTestDB(t *testing.T) *pgxpool.Pool {
 
 	pool, err := database.Connect(ctx, conf)
 	if err != nil {
-		t.Fatalf("Unable to connect to database: %v", err)
+		t.Fatalf("Unable to Connect to database: %v", err)
 	}
 
 	return pool
