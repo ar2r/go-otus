@@ -13,14 +13,17 @@ import (
 
 func New(ctx context.Context, logg *slog.Logger, myConfig *config.Config) (model.EventRepository, error) {
 	var eventRepo model.EventRepository
-	var err error
 
 	switch myConfig.App.Storage {
 	case "memory":
 		eventRepo = memorystorage.New()
 		logg.Info("Memory adapters initialized")
 	case "sql":
-		eventRepo, err = sqlstorage.New(ctx, myConfig.Database, logg)
+		dbPool, err := sqlstorage.Connect(ctx, myConfig.Database, logg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to connect to database: %w", err)
+		}
+		eventRepo, err = sqlstorage.New(logg, dbPool)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize SQL storage: %w", err)
 		}

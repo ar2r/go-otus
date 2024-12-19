@@ -2,7 +2,9 @@ BIN := "./bin/calendar"
 BIN_SCHEDULER := "./bin/calendar_scheduler"
 BIN_SENDER := "./bin/calendar_sender"
 
-DOCKER_IMG="calendar:develop"
+DOCKER_CALENDAR_IMG="calendar:develop"
+DOCKER_SCHEDULER_IMG="scheduler:develop"
+DOCKER_SENDER_IMG="sender:develop"
 
 GIT_HASH := $(shell git log --format="%h" -n 1)
 LDFLAGS := -X main.release="develop" -X main.buildDate=$(shell date -u +%Y-%m-%dT%H:%M:%S) -X main.gitHash=$(GIT_HASH)
@@ -25,11 +27,19 @@ run-sender: build
 build-img:
 	docker build \
 		--build-arg=LDFLAGS="$(LDFLAGS)" \
-		-t $(DOCKER_IMG) \
-		-f build/Dockerfile .
+		-t $(DOCKER_CALENDAR_IMG) \
+		-f build/Dockerfile.calendar .
+	docker build \
+    		--build-arg=LDFLAGS="$(LDFLAGS)" \
+    		-t $(DOCKER_SCHEDULER_IMG) \
+    		-f build/Dockerfile.scheduler .
+	docker build \
+    		--build-arg=LDFLAGS="$(LDFLAGS)" \
+    		-t $(DOCKER_SENDER_IMG) \
+    		-f build/Dockerfile.sender .
 
 run-img: build-img
-	docker run $(DOCKER_IMG)
+	docker run $(DOCKER_CALENDAR_IMG)
 
 clean:
 	rm -rf $(BIN)
@@ -43,6 +53,12 @@ test:
 	# Если тесты запускаются с TZ=UTC или TZ="", происходит какая-то странная магия. Подробности в пул реквесте.
 	# Поэтому запускаем тесты с TZ=Europe/Moscow 🤬
 	TZ=Europe/Moscow go test -v -race -tags=ci ./internal/...
+
+test-integration:
+	docker compose -f docker-compose.test.yaml --progress quiet up --build -d
+	TZ=Europe/Moscow go test -tags=integration -v ./tests/...; exit_code=$$?; \
+	docker compose -f docker-compose.test.yaml --progress quiet down; \
+	exit $$exit_code
 
 install-lint-deps:
 	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.62.0
@@ -66,6 +82,9 @@ migrate: build
 	$(BIN) -config ./configs/config.toml migrate
 
 up:
+	docker compose up --build -d
+
+up-hot:
 	docker compose up -d
 
 down:
