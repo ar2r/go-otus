@@ -20,6 +20,9 @@ func New(ctx context.Context, logg *slog.Logger, myConfig *config.Config) (model
 		logg.Info("Memory adapters initialized")
 	case "sql":
 		dbPool, err := sqlstorage.Connect(ctx, myConfig.Database, logg)
+		if err != nil {
+			return nil, fmt.Errorf("failed to connect to database: %w", err)
+		}
 		eventRepo, err = sqlstorage.New(logg, dbPool)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize SQL storage: %w", err)
