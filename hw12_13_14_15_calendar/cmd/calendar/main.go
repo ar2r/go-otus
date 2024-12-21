@@ -59,7 +59,7 @@ func main() {
 	logg.Info("Calendar is booting...")
 
 	if flag.Arg(0) == "migrate" {
-		if err := MigrateRun(logg, myConfig.Database, true); err != nil {
+		if err := MigrateRun(logg, myConfig.Database, false); err != nil {
 			logg.Error(fmt.Sprintf("%v", err))
 		}
 		return

@@ -6,13 +6,13 @@ services:
   calendar:
     build:
       context: .
-      dockerfile: .devenv/calendar/Dockerfile
+      dockerfile: build/Dockerfile.calendar
     container_name: calendar
     volumes:
-      - .:/app
+      - ./configs/config_docker.toml:/etc/calendar/config.toml
     ports:
-      - "8080:8080" # REST http://localhost:8080
-      - "8090:8090" # GRPC http://localhost:8090
+      - "8888:8080" # REST http://localhost:8888
+      - "9999:8090" # GRPC http://localhost:9999
     depends_on:
       postgres:
         condition: service_healthy
@@ -22,12 +22,10 @@ services:
   scheduler:
     build:
       context: .
-      dockerfile: .devenv/scheduler/Dockerfile
+      dockerfile: build/Dockerfile.scheduler
     container_name: scheduler
     volumes:
-      - .:/app
-    ports:
-      - "8081:8081"
+      - ./configs/config_docker.toml:/etc/calendar/config.toml
     depends_on:
       postgres:
         condition: service_healthy
@@ -39,12 +37,10 @@ services:
   sender:
     build:
       context: .
-      dockerfile: .devenv/sender/Dockerfile
+      dockerfile: build/Dockerfile.sender
     container_name: sender
     volumes:
-      - .:/app
-    ports:
-      - "8082:8082"
+      - ./configs/config_docker.toml:/etc/calendar/config.toml
     depends_on:
       postgres:
         condition: service_healthy
@@ -63,8 +59,8 @@ services:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U calendar" ]
-      interval: 3s
-      timeout: 5s
+      interval: 10s
+      timeout: 10s
       retries: 5
     ports:
       - "5432:5432"
@@ -78,8 +74,8 @@ services:
       - "5672:5672" # AMQP
       - "15672:15672" # UI http://localhost:15672 (guest:guest)
     healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
-      interval: 3s
-      timeout: 5s
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      interval: 5s
+      timeout: 20s
       retries: 5
     restart: unless-stopped

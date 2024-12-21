@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/database"
 	"github.com/ar2r/go-otus/hw12_13_14_15_calendar/internal/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -18,25 +17,11 @@ type Storage struct {
 	conn *pgxpool.Pool
 }
 
-func New(ctx context.Context, conf database.Config, logg *slog.Logger) (*Storage, error) {
-	pgxPool, err := connect(ctx, conf, logg)
-	if err != nil {
-		return nil, err
-	}
-
+func New(logg *slog.Logger, pool *pgxpool.Pool) (*Storage, error) {
 	return &Storage{
 		logg: logg,
-		conn: pgxPool,
+		conn: pool,
 	}, nil
-}
-
-func connect(ctx context.Context, conf database.Config, logg *slog.Logger) (*pgxpool.Pool, error) {
-	pgxPool, err := database.Connect(ctx, conf)
-	if err != nil {
-		logg.Error(fmt.Sprintf("failed to create connection to database: %s", err))
-		return nil, err
-	}
-	return pgxPool, nil
 }
 
 func (s *Storage) Close() {
