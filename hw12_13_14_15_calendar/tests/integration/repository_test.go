@@ -62,6 +62,7 @@ func (s *RepositoryTestSuite) TearDownTest() {
 
 func (s *RepositoryTestSuite) TearDownSuite() {
 	s.m.Close()
+	s.pool.Close()
 }
 
 func (s *RepositoryTestSuite) TestSave() {

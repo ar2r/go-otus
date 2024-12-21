@@ -55,9 +55,9 @@ test:
 	TZ=Europe/Moscow go test -v -race -tags=ci ./internal/...
 
 test-integration:
-	docker compose -f docker-compose.test.yaml --progress quiet up --build -d
+	docker compose -f docker-compose.yaml up --build -d
 	TZ=Europe/Moscow go test -tags=integration -v ./tests/...; exit_code=$$?; \
-	docker compose -f docker-compose.test.yaml --progress quiet down; \
+	docker compose -f docker-compose.yaml down; \
 	exit $$exit_code
 
 install-lint-deps:

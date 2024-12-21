@@ -16,5 +16,20 @@ services:
       timeout: 5s
       retries: 5
 
+  app:
+    container_name: app-test
+    build:
+      dockerfile: Test.Dockerfile
+    env_file:
+      - "integration/.env"
+    ports:
+      - "${HTTP_PORT}:${HTTP_PORT}"
+      - "${GRPC_PORT}:${GRPC_PORT}"
+    depends_on:
+      rmq:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+
 volumes:
   pgdata:
