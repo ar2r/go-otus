@@ -84,9 +84,6 @@ migrate: build
 up:
 	docker compose up --build -d
 
-up-hot:
-	docker compose up -d
-
 down:
 	docker compose down -v
 
